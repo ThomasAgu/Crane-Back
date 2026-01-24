@@ -33,6 +33,23 @@ def register(db: Session, user: schemas.UserCreate):
     db.refresh(db_user)
     return db_user
 
+def disable_user(db: Session, user_id: int):
+    ''' Disable a user by ID '''
+    user = get_by_id(db, user_id)
+    if user:
+        user.is_active = False
+        db.commit()
+        db.refresh(user)
+    return user
+
+def enable_user(db: Session, user_id: int):
+    ''' Enable a user by ID '''
+    user = get_by_id(db, user_id)
+    if user:
+        user.is_active = True
+        db.commit()
+        db.refresh(user)
+    return user
 
 def login(db: Session, user: schemas.UserLogin):
     ''' Login to get an authentication token '''

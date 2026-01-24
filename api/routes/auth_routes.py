@@ -20,6 +20,9 @@ def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
     if db_user is None:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
+    if not db_user.is_active:
+        raise HTTPException(status_code=403, detail="User is disabled")
+
     # Get user roles
     roles = get_roles_by_user(db, db_user)
     user_roles = {db_user.email: [role.name for role in roles]}
@@ -79,4 +82,6 @@ async def verify_permissions(roles: list, route: str, method: str):
             "object": route.upper()
         }
     }
+    #OPA_RBAC_CONFIG_NAME Cambia si lo actualizamos
+    print("Verificando permisos con política:", OPA_RBAC_CONFIG_NAME)
     return check_policy(OPA_RBAC_CONFIG_NAME, OPA_RBAC_RULE_NAME, input_data).get("result")

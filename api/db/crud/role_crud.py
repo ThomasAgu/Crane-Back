@@ -11,6 +11,20 @@ def get_by_id(db: Session, role_id: int):
     ''' Get role by ID '''
     return db.query(models.Role).filter(models.Role.id == role_id).first()
 
+def get_permissions_for_role(db: Session, role_id: int):
+    ''' Get all permissions for a role '''
+    role = get_by_id(db, role_id)
+
+    if not role:
+        return None
+
+    return (
+        db.query(models.Permission)
+        .join(models.RolePermission, models.RolePermission.permission_id == models.Permission.id)
+        .filter(models.RolePermission.role_id == role_id)
+        .all()
+    )
+
 
 def get_by_name(db: Session, name: str):
     ''' Get role by name '''
@@ -79,3 +93,52 @@ def remove_user(db: Session, user_id: int, role_id: int):
 def get_roles_by_user(db: Session, db_user: models.User):
     ''' Get roles by user '''
     return db.query(models.Role).join(models.UserRole).filter(models.UserRole.user_id == db_user.id).all()
+
+def assign_permission_to_role(db: Session, role_id: int, permission_id: int):
+    role = db.query(models.Role).filter(models.Role.id == role_id).first()
+    permission = db.query(models.Permission).filter(models. Permission.id == permission_id).first()
+
+    if not role or not permission:
+        return None
+
+    # verificar si ya existe
+    existing = (
+        db.query(models.RolePermission)
+        .filter(
+            models.RolePermission.role_id == role_id,
+            models.RolePermission.permission_id == permission_id
+        )
+        .first()
+    )
+    if existing:
+        return False
+
+    rp = models.RolePermission(role_id=role_id, permission_id=permission_id)
+    db.add(rp)
+    db.commit()
+    db.refresh(rp)
+
+    return rp
+
+def delete_permission_from_role(db: Session, role_id: int, permission_id: int):
+    permission = db.query(models.Permission).filter(models.Permission.id == permission_id).first()
+
+    if not permission:
+        return None
+
+    rp = (
+        db.query(models.RolePermission)
+        .filter(
+            models.RolePermission.role_id == role_id,
+            models.RolePermission.permission_id == permission_id
+        )
+        .first()
+    )
+    
+    if not rp:
+        return False
+
+    db.delete(rp)
+    db.commit()
+
+    return rp

@@ -29,6 +29,7 @@ class Role(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
+    built_in = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, onupdate=datetime.now)
     deleted_at = Column(String, index=True)
@@ -63,3 +64,26 @@ class App(Base):
     deleted_at = Column(String, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     user = relationship("User", back_populates="apps")
+
+class Permission(Base):
+    ''' This class defines the permission model '''
+    __tablename__ = "permissions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    object = Column(String, index=True)
+    action = Column(String, index=True)
+    description = Column(String, index=True)
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, onupdate=datetime.now)
+    deleted_at = Column(String, index=True)
+
+class RolePermission(Base):
+    ''' This class defines the role permission model '''
+    __tablename__ = "role_permissions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    role_id = Column(Integer, ForeignKey("roles.id"))
+    permission_id = Column(Integer, ForeignKey("permissions.id"))
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, onupdate=datetime.now)
+    deleted_at = Column(String, index=True)

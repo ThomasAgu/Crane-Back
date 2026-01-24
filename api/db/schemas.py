@@ -73,10 +73,9 @@ class UserLogin(BaseModel):
 class Role(BaseModel):
     id: Optional[int]
     name: str
-
+    built_in: int
     class Config:
         from_attributes = True
-
 
 class RoleCreate(BaseModel):
     name: str
@@ -90,6 +89,23 @@ class UserRole(BaseModel):
     id: Optional[int]
     user_id: int
     role_id: int
+
+    class Config:
+        from_attributes = True
+
+class Permission(BaseModel):
+    id: Optional[int]
+    object: str
+    action: str
+    description: str
+
+    class Config:
+        from_attributes = True
+
+class RolePermission(BaseModel):
+    id: int
+    role_id: int
+    permission_id: int
 
     class Config:
         from_attributes = True
