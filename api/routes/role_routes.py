@@ -13,12 +13,12 @@ from api.db.crud import user_crud as UserRepository
 roleRouter = APIRouter()
 
 
-@roleRouter.get("/", tags=["Roles"], description="Get all roles", response_model=List[Role], dependencies=[Depends(verify_jwt)])
+@roleRouter.get("/", tags=["Roles"], description="Get all roles", response_model=List[Role])
 def get_all_roles(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return get_all(db=db, skip=skip, limit=limit)
 
 
-@roleRouter.get("/{role_id}", tags=["Roles"], description="Get role by id", response_model=Role, dependencies=[Depends(verify_jwt)])
+@roleRouter.get("/{role_id}", tags=["Roles"], description="Get role by id", response_model=Role)
 def get_role_by_id(role_id: int, db: Session = Depends(get_db)):
     role = get_by_id(db, role_id)
     if not role:

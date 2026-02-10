@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 from api.db.crud.role_crud import get_all as get_all_roles
 from api.db.crud.permission_crud import get_all as get_all_permissions
 from api.db.crud.role_crud import get_permissions_for_role as get_permissions_by_role
-import tempfile
 import json
 
 def build_dynamic_rego(db: Session):
@@ -83,3 +82,31 @@ def write_rego_file(rego_content: str):
 
     logging.warning(f"[RBAC] Nuevo archivo .rego generado en: {file_path}")
     return file_path
+
+
+import re
+import json
+
+def parse_role_permissions_from_rego(rego_path: str):
+    """
+    Extracts the role_permissions dictionary from a .rego file and returns it as a Python dict.
+    """
+    with open(rego_path, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    # Regex to extract the JSON-like block inside role_permissions := {...}
+    match = re.search(r'role_permissions\s*:=\s*({.*?})\s*\n', content, re.DOTALL)
+    if not match:
+        raise ValueError("role_permissions block not found in Rego file")
+
+    json_like = match.group(1)
+
+    # Clean up the JSON-like structure to make it valid JSON
+    json_like = re.sub(r",\s*}", "}", json_like)  # Remove trailing commas before closing braces
+    json_like = re.sub(r",\s*]", "]", json_like)  # Remove trailing commas before closing brackets
+
+    # Parse the cleaned JSON-like string
+    try:
+        return json.loads(json_like)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Failed to parse role_permissions as JSON: {e}")

@@ -12,8 +12,10 @@ from api.routes.monitoring_routes import monitoringRouter
 from api.routes.user_routes import userRouter
 from api.routes.rule_routes import ruleRouter
 from api.routes.permission_routes import permissionRouter
+from api.routes.repository_routes import repositoryRouter
 from api.config.constants import API_PREFIX, OPA_RBAC_CONFIG_NAME, OPA_RBAC_CONFIG_FILE, OPA_ALERT_RULES_CONFIG_NAME, OPA_ALERT_RULES_CONFIG_FILE
 from api.clients.opa_client import update_policies_file, update_or_create_opa_data
+from api.services.policy_update_service import update_or_create_roles_and_permissions_in_db
 from api.services.rule_service import start_rules
 from api.services.monitoring_service import start_monitoring
 from api.db.database import create_db_and_tables
@@ -44,6 +46,7 @@ async def startup_event():
     update_policies_file(OPA_RBAC_CONFIG_NAME, OPA_RBAC_CONFIG_FILE, True)
     data = json.load(open(OPA_ALERT_RULES_CONFIG_FILE, encoding='utf-8'))
     update_or_create_opa_data(data, OPA_ALERT_RULES_CONFIG_NAME)
+    update_or_create_roles_and_permissions_in_db()
 
 router = APIRouter()
 
@@ -54,6 +57,7 @@ router.include_router(appRouter, prefix="/v1/apps")
 router.include_router(roleRouter, prefix="/v1/roles")
 router.include_router(userRouter, prefix="/v1/users")
 router.include_router(permissionRouter, prefix="/v1/permissions")
+router.include_router(repositoryRouter, prefix="/v1/repository")
 
 app.include_router(router, prefix=API_PREFIX)
 

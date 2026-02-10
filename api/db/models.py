@@ -87,3 +87,42 @@ class RolePermission(Base):
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, onupdate=datetime.now)
     deleted_at = Column(String, index=True)
+
+class RepositoryItem(Base):
+    ''' This class defines the repository item model '''
+    __tablename__ = "repository_items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, index=True)
+    description = Column(String, index=True)
+    services = Column(String, index=True)
+    downloads = Column(Integer, default=0)
+    state = Column(String, default="pending")
+    app_id = Column(Integer, ForeignKey("apps.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, onupdate=datetime.now)
+    deleted_at = Column(String, index=True)
+
+class Vote(Base):
+    ''' This class defines the vote model '''
+    __tablename__ = "votes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    repository_item_id = Column(Integer, ForeignKey("repository_items.id"))
+    vote_type = Column(String, index=True) 
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, onupdate=datetime.now)
+    deleted_at = Column(String, index=True)
+
+class Favourite(Base):
+    ''' This class defines the favourite model '''
+    __tablename__ = "favourites"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    repository_item_id = Column(Integer, ForeignKey("repository_items.id"))
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, onupdate=datetime.now)
+    deleted_at = Column(String, index=True)

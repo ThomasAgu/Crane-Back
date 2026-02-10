@@ -8,6 +8,8 @@ from api.clients.docker_client import get_docker_client
 from api.config.constants import PROMETHEUS_NETWORK_NAME
 from api.services.generator_service import docker_compose_generator, docker_compose_remove, prometheus_scrape_generator, prometheus_scrape_remove
 from api.services.monitoring_service import restart_monitoring
+from api.db import models, schemas
+from datetime import datetime
 
 
 async def create(db: Session, app: App, user_id: int):
@@ -49,6 +51,40 @@ async def create(db: Session, app: App, user_id: int):
 
     # finally return app
     return db_app
+
+async def copy(db: Session, app_id: int, user_id: int):
+    ''' Duplicate the app row and update the user_id '''
+    # Retrieve the app to be copied
+    app = AppCrud.get_by_id(db, app_id)
+    if not app:
+        raise HTTPException(status_code=404, detail="App not found")
+
+    # Create a copy of the app
+    app_copy = models.App(
+        name=f"{app.name}-copia",
+        services=app.services,
+        hosts=app.hosts,
+        current_scale=app.current_scale,
+        min_scale=app.min_scale,
+        max_scale=app.max_scale,
+        force_stop=app.force_stop,
+        user_id=user_id,  # Assign the new user as the creator
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
+        deleted_at=None
+    )
+
+    # Add the new app to the database
+    db.add(app_copy)
+    db.commit()
+    db.refresh(app_copy)
+
+    return app_copy
+
+    # Add the new app to the database
+    AppCrud.create(db, app_copy)
+
+    return app_copy
 
 
 async def start(db: Session, app_id: str, user_id: int = None):

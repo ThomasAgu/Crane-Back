@@ -27,6 +27,7 @@ role_permissions := {
         {"action": "POST", "object": "REPOSITORY"},
         {"action": "PATCH", "object": "REPOSITORY"},
         {"action": "DELETE", "object": "REPOSITORY"},
+        {"action": "GET", "object": "REPOSITORYMODERATOR"},
         {"action": "GET", "object": "PERMISSIONS"},
         {"action": "POST", "object": "PERMISSIONS"},
     ],
@@ -35,6 +36,7 @@ role_permissions := {
         {"action": "POST",  "object": "APPS"},
         {"action": "PATCH",  "object": "APPS"},
         {"action": "DELETE",  "object": "APPS"},
+        {"action": "GET",  "object": "ROLES"},
         {"action": "GET", "object": "REPOSITORY"},
         {"action": "POST", "object": "REPOSITORY"},
     ],
@@ -52,10 +54,12 @@ role_permissions := {
         {"action": "PATCH",  "object": "MONITORING"},
         {"action": "DELETE",  "object": "MONITORING"},
         {"action": "GET",  "object": "RULES"},
+        {"action": "GET",  "object": "ROLES"},
         {"action": "GET", "object": "REPOSITORY"},
         {"action": "POST", "object": "REPOSITORY"},
         {"action": "PATCH", "object": "REPOSITORY"},
         {"action": "DELETE", "object": "REPOSITORY"},
+        {"action": "GET", "object": "REPOSITORYMODERATOR"},
     ],
 }
 

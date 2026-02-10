@@ -79,11 +79,11 @@ class Role(BaseModel):
 
 class RoleCreate(BaseModel):
     name: str
-
+    built_in: bool = False
 
 class RoleUpdate(BaseModel):
     name: str
-
+    built_in: bool
 
 class UserRole(BaseModel):
     id: Optional[int]
@@ -94,13 +94,14 @@ class UserRole(BaseModel):
         from_attributes = True
 
 class Permission(BaseModel):
-    id: Optional[int]
+    id: Optional[int] = None
     object: str
     action: str
-    description: str
+    description: Optional[str] = None
 
     class Config:
         from_attributes = True
+
 
 class RolePermission(BaseModel):
     id: int

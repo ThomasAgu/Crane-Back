@@ -1,5 +1,8 @@
 from sqlalchemy.orm import Session
 from api.db import models, schemas
+from api.db.crud.role_crud import create as create_role
+from api.db.crud.permission_crud import create as create_permission
+from api.db.crud.role_crud import assign_permission_to_role
 
 
 def get_all(db: Session, skip: int = 0, limit: int = 100):
@@ -101,7 +104,6 @@ def assign_permission_to_role(db: Session, role_id: int, permission_id: int):
     if not role or not permission:
         return None
 
-    # verificar si ya existe
     existing = (
         db.query(models.RolePermission)
         .filter(
@@ -142,3 +144,26 @@ def delete_permission_from_role(db: Session, role_id: int, permission_id: int):
     db.commit()
 
     return rp
+
+def delete_all(db: Session):
+    ''' Delete all roles '''
+    print(type(db))  # Add this to check the type of `db`
+    db.query(models.Role).delete(synchronize_session=False)
+    db.commit()
+
+def populate_roles_and_permissions(db: Session, role_permissions: dict):
+    """
+    Populate roles, permissions, and role_permissions tables from the parsed role_permissions dictionary.
+    """
+    for role_name, permissions in role_permissions.items():
+
+        role = create_role(db, schemas.RoleCreate(role_name))
+
+        for perm in permissions:
+            action = perm["action"]
+            obj = perm["object"]
+            description = perm.get("description", "")
+
+            permission = create_permission(db, {"action": action, "object": obj, "description": description})
+
+            assign_permission_to_role(db, role.id, permission.id)
