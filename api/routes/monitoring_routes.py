@@ -9,7 +9,6 @@ from api.services.alert_service import manage_alert
 
 monitoringRouter = APIRouter()
 
-
 @monitoringRouter.post("/", tags=["Monitoring"], description="Start Prometheus and Alert Manager services", response_model_exclude_none=True, dependencies=[Depends(verify_jwt)])
 async def start():
     return await MonitoringService.start_monitoring()
@@ -24,8 +23,6 @@ async def stop():
 async def restart():
     return await MonitoringService.restart_monitoring()
 
-
 @monitoringRouter.post("/alert", tags=["Monitoring"], description="Receive Alert Manager Webhook notification")
 async def alert(data: Dict[Any, Any], db: Session = Depends(get_db)):
-    print(data)
     return await manage_alert(db, data)

@@ -110,3 +110,12 @@ class RolePermission(BaseModel):
 
     class Config:
         from_attributes = True
+
+class Action(BaseModel):
+    id: int
+    name: str
+    description: str
+
+class ActionCreate(BaseModel):
+    name: str
+    description: str

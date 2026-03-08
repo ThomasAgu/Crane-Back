@@ -4,7 +4,6 @@ from api.clients.docker_client import get_docker_client
 from api.services.generator_service import prometheus_yaml_generator
 from api.config.constants import MONITORING_SERVICE_NAME, PROMETHEUS_NETWORK_NAME, PROMETHEUS_NETWORK_DRIVER
 
-
 async def start_monitoring():
     ''' Start Prometheus and Alert Manager services'''
     try:

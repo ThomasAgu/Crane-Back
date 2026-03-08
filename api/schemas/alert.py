@@ -25,23 +25,33 @@ class Annotations(BaseModel):
 
 
 class Alert(BaseModel):
-    status: str
+    status: Optional[str] = None
     labels: CommonLabels
-    annotations: Annotations
-    startsAt: str
-    endsAt: str
-    generatorURL: str
-    fingerprint: str
+    annotations: Optional[Annotations] = None
+    startsAt: Optional[str] = None
+    endsAt: Optional[str] = None
+    generatorURL: Optional[str] = None
+    fingerprint: Optional[str] = None
 
 
 class AlertNotification(BaseModel):
-    receiver: str
+    receiver: Optional[str] = None
     status: str
     alerts: List[Alert]
     groupLabels: GroupLabels
-    commonLabels: CommonLabels
-    commonAnnotations: Annotations
-    externalURL: str
-    version: str
-    groupKey: str
-    truncatedAlerts: int
+    commonLabels: Optional[CommonLabels] = None
+    commonAnnotations: Optional[Annotations] = None
+    externalURL: Optional[str] = None
+    version: Optional[str] = None
+    groupKey: Optional[str] = None
+    truncatedAlerts: Optional[int] = 0
+
+class CustomAlert(BaseModel):
+    alert: str
+    expr: str
+    for_time: str
+    severity: str
+    summary: str
+    description: str
+    firing_action: str
+    resolved_action: str

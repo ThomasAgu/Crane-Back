@@ -30,6 +30,11 @@ role_permissions := {
         {"action": "GET", "object": "REPOSITORYMODERATOR"},
         {"action": "GET", "object": "PERMISSIONS"},
         {"action": "POST", "object": "PERMISSIONS"},
+        {"action": "GET", "object": "ACTION"},
+        {"action": "GET", "object": "ALERT"},
+        {"action": "POST", "object": "ALERT"},
+        {"action": "PATCH", "object": "ALERT"},
+        {"action": "DELETE", "object": "ALERT"},
     ],
     "USER":  [
         {"action": "GET",  "object": "APPS"},
@@ -60,6 +65,11 @@ role_permissions := {
         {"action": "PATCH", "object": "REPOSITORY"},
         {"action": "DELETE", "object": "REPOSITORY"},
         {"action": "GET", "object": "REPOSITORYMODERATOR"},
+        {"action": "GET", "object": "ACTION"},
+        {"action": "GET", "object": "ALERT"},
+        {"action": "POST", "object": "ALERT"},
+        {"action": "PATCH", "object": "ALERT"},
+        {"action": "DELETE", "object": "ALERT"},
     ],
 }
 

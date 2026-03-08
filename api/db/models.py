@@ -1,6 +1,6 @@
 ''' This module defines the database models '''
 from datetime import datetime
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text, DateTime
 from sqlalchemy.orm import relationship
 
 
@@ -64,6 +64,9 @@ class App(Base):
     deleted_at = Column(String, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     user = relationship("User", back_populates="apps")
+    custom_alerts = relationship("CustomAlert", back_populates="app")
+    app_policies = relationship("AppPolicy", back_populates="app")
+
 
 class Permission(Base):
     ''' This class defines the permission model '''
@@ -126,3 +129,40 @@ class Favourite(Base):
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, onupdate=datetime.now)
     deleted_at = Column(String, index=True)
+
+class CustomAlert(Base):
+    __tablename__ = 'custom_alerts'
+
+    id = Column(Integer, primary_key=True, index=True)
+    app_id = Column(Integer, ForeignKey('apps.id'), nullable=False)
+    alert = Column(String, nullable=False)
+    expr = Column(Text, nullable=False)
+    for_time = Column(String, nullable=False)
+    severity = Column(String, nullable=False)
+    summary = Column(Text, nullable=False)
+    description = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, onupdate=datetime.now)
+    deleted_at = Column(String, index=True)
+
+    app = relationship("App", back_populates="custom_alerts")
+    app_policies = relationship("AppPolicy", back_populates="alert")
+
+class AppPolicy(Base):
+    __tablename__ = 'app_policies'
+
+    id = Column(Integer, primary_key=True, index=True)
+    app_id = Column(Integer, ForeignKey('apps.id'), nullable=False)
+    alert_id = Column(Integer, ForeignKey('custom_alerts.id'), nullable=False)
+    firing_action = Column(String, nullable=False)
+    resolved_action = Column(String, nullable=False)
+
+    app = relationship("App", back_populates="app_policies")
+    alert = relationship("CustomAlert", back_populates="app_policies")
+
+class Action(Base): 
+    __tablename__ = 'firing_actions'
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(Text, nullable=False)
+    description = Column(Text, nullable=False)

@@ -11,6 +11,7 @@ global:
   scrape_interval: 5s
 rule_files:
 - rules.yml
+- "/etc/prometheus/rules/*.yml"
 scrape_configs:
 - job_name: prometheus
   static_configs:

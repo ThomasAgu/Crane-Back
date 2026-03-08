@@ -11,7 +11,8 @@ from api.config.constants import (TEMP_FILES_PATH, GLOBAL_SCRAPE_INTERVAL, GLOBA
                                   EXTERNAL_LABELS_MONITOR, RULES_FILE, ALERT_MANAGER_SCHEME, ALERT_MANAGER_PORT,
                                   PROMETHEUS_SCRAPE_INTERVAL, PROMETHEUS_PORT, TARGET_PORT, MONITORING_FILES_PATH,
                                   PROMETHEUS_FILE, REMOVE_TEMP_FILES, PROMETHEUS_SCRAPE_JOB_NAME)
-
+from api.db.models import CustomAlert
+from sqlalchemy.orm import Session
 
 def write_yaml(obj, path):
     ''' Write yaml file '''
@@ -93,7 +94,7 @@ def prometheus_yaml_generator(force=False):
                 }
             },
             "rule_files": [
-                RULES_FILE
+                "/etc/prometheus/rules/*.yml"
             ],
             "alerting": {
                 "alertmanagers": [
@@ -182,3 +183,38 @@ def prometheus_scrape_remove(app_name: str):
         file_to_write.close()
 
     return file_data
+
+
+def generate_app_rules_yml(app_id: int, db: Session):
+    ''' Generate YAML file for application-specific Prometheus rules '''
+    alerts = db.query(CustomAlert).filter(CustomAlert.app_id == app_id).all()
+
+    if not alerts:
+        return f"No alerts found for app_id {app_id}"
+
+    rules = []
+    for alert in alerts:
+        rules.append({
+            "alert": alert.alert,
+            "expr": alert.expr,
+            "for": alert.for_time,
+            "labels": {
+                "severity": alert.severity,
+                "job": f"app-{alert.app_id}"
+            },
+            "annotations": {
+                "summary": alert.summary,
+                "description": alert.description
+            }
+        })
+
+    yaml_obj = [{"groups": [{"name": f"app-{app_id}-rules", "rules": rules}]}]
+
+    path = Path.cwd() / MONITORING_FILES_PATH / "rules" / f"app_{app_id}.yml"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    write_yaml(yaml_obj, path)
+
+    return {
+        "path": str(path),
+        "yaml": yaml_obj
+    }

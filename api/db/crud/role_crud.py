@@ -1,8 +1,6 @@
 from sqlalchemy.orm import Session
 from api.db import models, schemas
-from api.db.crud.role_crud import create as create_role
 from api.db.crud.permission_crud import create as create_permission
-from api.db.crud.role_crud import assign_permission_to_role
 
 
 def get_all(db: Session, skip: int = 0, limit: int = 100):
@@ -155,6 +153,10 @@ def populate_roles_and_permissions(db: Session, role_permissions: dict):
     """
     Populate roles, permissions, and role_permissions tables from the parsed role_permissions dictionary.
     """
+    from api.db.crud.role_crud import create as create_role
+    from api.db.crud.role_crud import assign_permission_to_role
+
+
     for role_name, permissions in role_permissions.items():
 
         role = create_role(db, schemas.RoleCreate(role_name))
