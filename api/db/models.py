@@ -166,3 +166,47 @@ class Action(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(Text, nullable=False)
     description = Column(Text, nullable=False)
+
+class Scenario(Base):
+    __tablename__ = 'scenarios'
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(Text, nullable=False)
+    description = Column(Text, nullable=False)
+    category = Column(Text, nullable=False)
+    function_name = Column(Text, nullable=False)
+
+class ContainerStats(Base):
+    '''This class defines the container stats model for historical tracking'''
+    __tablename__ = 'container_stats'
+
+    id = Column(Integer, primary_key=True, index=True)
+    app_id = Column(Integer, ForeignKey('apps.id'), nullable=False, index=True)
+    container = Column(String, nullable=False, index=True)  # Container identifier
+    container_id = Column(String, nullable=False)  # Full container ID
+    container_name = Column(String, nullable=False, index=True)  # Container name
+    cpu_percentage = Column(String, nullable=False)  # CPU percentage
+    memory_used = Column(String, nullable=False)  # Memory used in bytes
+    memory_limit = Column(String, nullable=False)  # Memory limit in bytes
+    memory_percentage = Column(String, nullable=False)  # Memory percentage
+    net_upload = Column(String, nullable=False)  # Network upload in bytes
+    net_download = Column(String, nullable=False)  # Network download in bytes
+    block_read = Column(String, nullable=False)  # Block read in bytes
+    block_write = Column(String, nullable=False)  # Block write in bytes
+    created_at = Column(DateTime, default=datetime.now, index=True)
+
+class AlertHistory(Base):
+    '''This class defines the alert history model for tracking triggered alerts'''
+    __tablename__ = 'alert_history'
+
+    id = Column(Integer, primary_key=True, index=True)
+    app_id = Column(Integer, ForeignKey('apps.id'), nullable=False, index=True)
+    alert_id = Column(Integer, ForeignKey('custom_alerts.id'), nullable=True)
+    alert_name = Column(String, nullable=False, index=True)
+    status = Column(String, nullable=False)  # 'firing' or 'resolved'
+    severity = Column(String, nullable=True)
+    summary = Column(Text, nullable=True)
+    description = Column(Text, nullable=True)
+    labels = Column(Text, nullable=True)  # JSON string of labels
+    created_at = Column(DateTime, default=datetime.now, index=True)
+    updated_at = Column(DateTime, onupdate=datetime.now)

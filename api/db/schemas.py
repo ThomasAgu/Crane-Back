@@ -119,3 +119,9 @@ class Action(BaseModel):
 class ActionCreate(BaseModel):
     name: str
     description: str
+
+class ScenarioCreate(BaseModel):
+    name: str
+    description: str
+    category: str
+    function_name: str

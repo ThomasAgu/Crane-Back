@@ -35,6 +35,10 @@ role_permissions := {
         {"action": "POST", "object": "ALERT"},
         {"action": "PATCH", "object": "ALERT"},
         {"action": "DELETE", "object": "ALERT"},
+        {"action": "GET", "object": "REPORTS"},
+        {"action": "POST", "object": "REPORTS"},
+        {"action": "PATCH", "object": "REPORTS"},
+        {"action": "DELETE", "object": "REPORTS"},
     ],
     "USER":  [
         {"action": "GET",  "object": "APPS"},

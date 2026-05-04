@@ -7,7 +7,6 @@ from api.db.crud.role_crud import get_all, get_by_id, create, update, delete, cr
 from api.db.schemas import Permission, RoleCreate, RoleUpdate, Role, RolePermission
 from api.routes.auth_routes import verify_jwt
 from api.db.schemas import UserRole
-from api.schemas import user
 from api.db.crud import user_crud as UserRepository
 
 roleRouter = APIRouter()

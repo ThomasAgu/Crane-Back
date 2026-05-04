@@ -8,6 +8,7 @@ from api.clients.opa_client import get_opa_raw_data
 import api.db.crud.app_crud as AppCrud
 import api.db.crud.alert_crud as AlertCrud
 import api.db.crud.app_policy_crud as AppPolicyCrud
+import api.db.crud.alert_history_crud as AlertHistoryCrud
 from api.config.constants import OPA_ALERT_RULES_CONFIG_NAME
 from api.services.crane_service import start, scale
 from api.db.models import AppPolicy, CustomAlert
@@ -25,6 +26,24 @@ async def manage_alert(db: Session, data: Dict[Any, Any]):
         app_id, app = await get_app_context(db, alert)
         if not app:
             continue
+
+        # Log alert to history
+        custom_alert = (db.query(CustomAlert)
+                        .filter(CustomAlert.app_id == app_id, 
+                                CustomAlert.alert == alert_name)
+                        .first())
+        
+        AlertHistoryCrud.create(
+            db,
+            app_id=app_id,
+            alert_id=custom_alert.id if custom_alert else None,
+            alert_name=alert_name,
+            status=status,
+            severity=alert.labels.severity if hasattr(alert.labels, 'severity') else None,
+            summary=alert.annotations.summary if hasattr(alert.annotations, 'summary') else None,
+            description=alert.annotations.description if hasattr(alert.annotations, 'description') else None,
+            labels=json.dumps(dict(alert.labels)) if alert.labels else None
+        )
 
         function_name = None
 

@@ -20,6 +20,10 @@ def get_all(db: Session, user_id: int = None, skip: int = 0, limit: int = 100):
     ''' Get all apps '''
     return db.query(models.App).filter(models.App.deleted_at == None).filter(or_(models.App.user_id == user_id, user_id is None)).offset(skip).limit(limit).all()
 
+def get_all_by_service(db: Session, skip: int = 0, limit: int = 100):
+    # Should be good if we only retrieve apps that have services defined, which should be the majority of them. We can add more filters if needed.
+    ''' Get all apps by service '''
+    return db.query(models.App).filter(models.App.deleted_at == None).offset(skip).limit(limit).all()
 
 def create(db: Session, user_app: schemas.AppCreate):
     ''' Create app '''
