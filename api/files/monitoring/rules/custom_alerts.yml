@@ -1,0 +1,111 @@
+groups:
+- name: custom-alerts
+  rules:
+  - alert: asdasda
+    expr: container_cpu_usage_seconds_total > 0.8
+    for: 5m
+    labels:
+      severity: warning
+      app_id: '6'
+      job: prueba_demo_crane_2024-copia
+    annotations:
+      summary: qweqwe
+      description: qweqwe
+  - alert: stop_apl
+    expr: up == 0
+    for: 1m
+    labels:
+      severity: critical
+      app_id: '2'
+      job: prueba_demo_crane_2024-copy
+    annotations:
+      summary: eto no se que es
+      description: The application is not responding. Stopping the application to
+        prevent further issues.
+  - alert: stop_apl
+    expr: up == 0
+    for: 1m
+    labels:
+      severity: critical
+      app_id: '2'
+      job: prueba_demo_crane_2024-copy
+    annotations:
+      summary: eto no se que es
+      description: The application is not responding. Stopping the application to
+        prevent further issues.
+  - alert: NuevaAlerta
+    expr: container_cpu_usage_seconds_total > 0.8
+    for: 1m
+    labels:
+      severity: info
+      app_id: '2'
+      job: prueba_demo_crane_2024-copy
+    annotations:
+      summary: AHHH
+      description: ''
+  - alert: stop_apl
+    expr: increase(traefik_entrypoint_requests_total[10s]) > 100
+    for: 10m
+    labels:
+      severity: critical
+      app_id: '3'
+      job: prueba_demo_crane_2024-copia
+    annotations:
+      summary: eto no se que es
+      description: The application is not responding. Stopping the application to
+        prevent further issues.
+  - alert: stop_apl
+    expr: increase(traefik_entrypoint_requests_total[10s]) > 100
+    for: 10m
+    labels:
+      severity: critical
+      app_id: '2'
+      job: prueba_demo_crane_2024-copy
+    annotations:
+      summary: eto no se que es
+      description: The application is not responding. Stopping the application to
+        prevent further issues.
+  - alert: stop_apl
+    expr: increase(traefik_entrypoint_requests_total[10s]) > 100
+    for: 10m
+    labels:
+      severity: critical
+      app_id: '1'
+      job: prueba_demo_crane_2024
+    annotations:
+      summary: eto no se que es
+      description: The application is not responding. Stopping the application to
+        prevent further issues.
+  - alert: stop_apl
+    expr: increase(traefik_entrypoint_requests_total[10s]) > 100
+    for: 10m
+    labels:
+      severity: critical
+      app_id: '1'
+      job: prueba_demo_crane_2024
+    annotations:
+      summary: eto no se que es
+      description: The application is not responding. Stopping the application to
+        prevent further issues.
+  - alert: stop_apl
+    expr: increase(traefik_entrypoint_requests_total[10s]) > 100
+    for: 10m
+    labels:
+      severity: critical
+      app_id: '1'
+      job: prueba_demo_crane_2024
+    annotations:
+      summary: eto no se que es
+      description: The application is not responding. Stopping the application to
+        prevent further issues.
+  - alert: AAAAAAAAAAAAAAAAAAA
+    expr: increase(traefik_entrypoint_requests_total[10s]) > 100
+    for: 10m
+    labels:
+      severity: critical
+      app_id: '2'
+      job: prueba_demo_crane_2024-copy
+    annotations:
+      summary: eto no se que es
+      description: The application is not responding. Stopping the application to
+        prevent further issues.

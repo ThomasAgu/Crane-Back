@@ -11,6 +11,7 @@ import api.db.crud.app_policy_crud as AppPolicyCrud
 import api.db.crud.alert_history_crud as AlertHistoryCrud
 from api.config.constants import OPA_ALERT_RULES_CONFIG_NAME
 from api.services.crane_service import start, scale
+from api.services.prometheus_sync_service import sync_alerts_to_prometheus, trigger_prometheus_reload
 from api.db.models import AppPolicy, CustomAlert
 
 
@@ -76,6 +77,9 @@ async def get_alerts(db, app_id):
 async def create(db, app_id, alert):
     new_alert = AlertCrud.create(db, app_id, alert)
     AppPolicyCrud.create(db, app_id, new_alert, alert)
+    # Sync all custom alerts to Prometheus rules file
+    sync_alerts_to_prometheus(db)
+    trigger_prometheus_reload()
     return new_alert
 
 async def update(db, app_id, alert, alert_id):
@@ -93,12 +97,20 @@ async def update(db, app_id, alert, alert_id):
     AppPolicyCrud.update(db, app_policy, alert)
     db.commit()
 
+    # Sync all custom alerts to Prometheus rules file
+    sync_alerts_to_prometheus(db)
+    trigger_prometheus_reload()
+
     return {"message": "Custom alert and policy updated successfully"}
 
 async def delete(db, app_id, alert_id):
     ''' Delete an existing alert from an app'''
     AppPolicyCrud.delete(db, app_id, alert_id)
-    return AlertCrud.delete(db, alert_id)
+    result = AlertCrud.delete(db, alert_id)
+    # Sync all custom alerts to Prometheus rules file
+    sync_alerts_to_prometheus(db)
+    trigger_prometheus_reload()
+    return result
         
 async def get_app_context(db: Session, alert):
     """ Centraliza la extracción de la app """
