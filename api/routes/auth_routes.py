@@ -1,14 +1,16 @@
 ''' Auth routes '''
 import jwt
+import httpx
 from fastapi import Depends, APIRouter, HTTPException, Header, Request
 from sqlalchemy.orm import Session
 from api.db import schemas
 from api.db.database import get_db
-from api.config.constants import JWT_SECRET, JWT_ALGORITHM, JWT_EXPIRATION_TIME_MINUTES, OPA_RBAC_CONFIG_NAME, OPA_RBAC_RULE_NAME
+from api.config.constants import JWT_SECRET, JWT_ALGORITHM, JWT_EXPIRATION_TIME_MINUTES, OPA_RBAC_CONFIG_NAME, OPA_RBAC_RULE_NAME, GOOGLE_CLIENT_ID
 import api.db.crud.user_crud as UserRepository
 from api.db.crud.role_crud import get_roles_by_user
 from api.clients.opa_client import check_policy
 
+http_client = httpx.AsyncClient()
 authRouter = APIRouter()
 
 
@@ -56,7 +58,62 @@ def decode_token(token: str, jwt_secret: str, jwt_algorithm: str):
         return payload
     except jwt.exceptions.InvalidTokenError as exc:
         raise HTTPException(status_code=401, detail="Invalid token") from exc
+    
+@authRouter.post("/google", tags=["Auth"], description="Login using Google Access Token")
+async def google_login(payload: schemas.UserLoginGoogle, db: Session = Depends(get_db)):
+    ''' Valida el access_token de Google, registra o loguea al usuario, y emite un JWT propio '''
+    token_info_url = f"https://oauth2.googleapis.com/tokeninfo?access_token={payload.access_token}"
+    try:
+        response = await http_client.get(token_info_url)
+        if response.status_code != 200:
+            raise HTTPException(status_code=401, detail="Invalid Google token")
+        google_data = response.json()
+        
+    except Exception as exc:
+        raise HTTPException(status_code=401, detail="Could not validate Google token") from exc
 
+    token_audience = google_data.get("aud") or google_data.get("azp")
+    print ("Google token audience:", GOOGLE_CLIENT_ID, "Token audience from Google:", token_audience)
+    if token_audience != GOOGLE_CLIENT_ID:
+        raise HTTPException(status_code=401, detail="Token target audience mismatch")
+
+    email = google_data.get("email")
+    if not email:
+        raise HTTPException(status_code=400, detail="Google token does not contain email profile info")
+
+    db_user = UserRepository.get_by_email(db, email=email)
+    if not db_user:
+        import secrets
+        random_password = secrets.token_hex(16)
+        
+        username = email.split("@")[0]
+        new_user_data = schemas.UserCreate(
+            email=email,
+            password=random_password,
+            full_name=username,
+        )
+        db_user = UserRepository.register(db=db, user=new_user_data)
+    
+
+    if not db_user.is_active:
+        raise HTTPException(status_code=403, detail="User is disabled")
+
+    roles = get_roles_by_user(db, db_user)
+    user_roles = {db_user.email: [role.name for role in roles]}
+
+    jwt_payload = {
+        "user_id": db_user.id, 
+        "email": db_user.email,
+        "roles": user_roles.get(db_user.email)
+    }
+
+    access_token = jwt.encode(jwt_payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+    return {
+        "access_token": access_token, 
+        "token_type": "bearer", 
+        "expires_in": JWT_EXPIRATION_TIME_MINUTES
+    }
 
 async def verify_jwt(request: Request, Authorization: str = Header(...), db: Session = Depends(get_db)):
     ''' Verify JWT token '''

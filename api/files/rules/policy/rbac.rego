@@ -39,6 +39,9 @@ role_permissions := {
         {"action": "POST", "object": "REPORTS"},
         {"action": "PATCH", "object": "REPORTS"},
         {"action": "DELETE", "object": "REPORTS"},
+        {"action": "GET", "object": "NOTIFICATIONS"},
+        {"action": "DELETE", "object": "NOTIFICATIONS"},
+        {"action": "POST", "object": "NOTIFICATIONS"},
     ],
     "USER":  [
         {"action": "GET",  "object": "APPS"},
@@ -48,6 +51,9 @@ role_permissions := {
         {"action": "GET",  "object": "ROLES"},
         {"action": "GET", "object": "REPOSITORY"},
         {"action": "POST", "object": "REPOSITORY"},
+        {"action": "GET", "object": "NOTIFICATIONS"},
+        {"action": "DELETE", "object": "NOTIFICATIONS"},
+        {"action": "POST", "object": "NOTIFICATIONS"},
     ],
     "OPERATOR": [
         {"action": "GET",  "object": "APPS"},
@@ -74,6 +80,9 @@ role_permissions := {
         {"action": "POST", "object": "ALERT"},
         {"action": "PATCH", "object": "ALERT"},
         {"action": "DELETE", "object": "ALERT"},
+        {"action": "GET", "object": "NOTIFICATIONS"},
+        {"action": "DELETE", "object": "NOTIFICATIONS"},
+        {"action": "POST", "object": "NOTIFICATIONS"},
     ],
 }
 

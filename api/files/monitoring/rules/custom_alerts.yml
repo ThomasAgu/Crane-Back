@@ -109,3 +109,13 @@ groups:
       summary: eto no se que es
       description: The application is not responding. Stopping the application to
         prevent further issues.
+  - alert: asdpoijeqwoifd
+    expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+    for: 1m
+    labels:
+      severity: warning
+      app_id: '2'
+      job: prueba_demo_crane_2024-copy
+    annotations:
+      summary: asdasdasd
+      description: kljkwefpiooiwef

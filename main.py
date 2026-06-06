@@ -18,6 +18,7 @@ from api.routes.actions_routes import actionRouter
 from api.routes.scenario_routes import scenarioRouter
 from api.routes.report_routes import reportRouter
 from api.routes.docker_hub_routes import dockerHubRouter
+from api.routes.notification_routes import notificationRouter
 from api.config.constants import API_PREFIX, OPA_RBAC_CONFIG_NAME, OPA_RBAC_CONFIG_FILE, OPA_ALERT_RULES_CONFIG_NAME, OPA_ALERT_RULES_CONFIG_FILE
 from api.clients.opa_client import update_policies_file, update_or_create_opa_data
 from api.services.policy_update_service import update_or_create_roles_and_permissions_in_db
@@ -35,6 +36,7 @@ dictConfig(LogConfig().dict())
 origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "https://crane-beige.vercel.app/"
 ]
 
 load_dotenv()
@@ -105,8 +107,8 @@ async def startup_event():
     
     create_db_and_tables()
     await start_rules()
-    await start_monitoring()
-    await start_stats_collection()
+    #await start_monitoring()
+    #await start_stats_collection()
     update_policies_file(OPA_RBAC_CONFIG_NAME, OPA_RBAC_CONFIG_FILE, True)
     # se va a ir esto me parece porque ya lo tenemos en base de datos
     data = json.load(open(OPA_ALERT_RULES_CONFIG_FILE, encoding='utf-8'))
@@ -118,7 +120,7 @@ async def startup_event():
         populate_firing_actions(db)
         populate_scenarios(db)
         # Sync custom alerts from database to Prometheus on startup
-        sync_alerts_to_prometheus(db)
+        #sync_alerts_to_prometheus(db)
     finally:
         db.close()
 
@@ -135,8 +137,9 @@ router.include_router(repositoryRouter, prefix="/v1/repository")
 router.include_router(actionRouter, prefix="/v1/action")
 router.include_router(alertRouter, prefix="/v1/alert")
 router.include_router(scenarioRouter, prefix="/v1/scenario")
-router.include_router(reportRouter, prefix="/v1/reports")
 router.include_router(dockerHubRouter, prefix="/v1/docker-hub")
+router.include_router(reportRouter, prefix="/v1/reports")
+router.include_router(notificationRouter, prefix="/v1/notifications")
 
 app.include_router(router, prefix=API_PREFIX)
 
@@ -144,7 +147,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "http://127.0.0.1:3000"
+        "http://127.0.0.1:3000",
+        "https://crane-beige.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],

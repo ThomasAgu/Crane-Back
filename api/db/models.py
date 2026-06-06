@@ -21,6 +21,8 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, onupdate=datetime.now)
     deleted_at = Column(String, index=True)
+    
+    roles = relationship("UserRole", back_populates="user")
 
 
 class Role(Base):
@@ -45,6 +47,7 @@ class UserRole(Base):
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, onupdate=datetime.now)
     deleted_at = Column(String, index=True)
+    user = relationship("User", back_populates="roles")
 
 
 class App(Base):
@@ -64,8 +67,27 @@ class App(Base):
     deleted_at = Column(String, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     user = relationship("User", back_populates="apps")
-    custom_alerts = relationship("CustomAlert", back_populates="app")
-    app_policies = relationship("AppPolicy", back_populates="app")
+    
+    custom_alerts = relationship(
+        "CustomAlert", 
+        back_populates="app", 
+        cascade="all, delete-orphan"
+    )
+    
+    app_policies = relationship(
+        "AppPolicy", 
+        back_populates="app", 
+        cascade="all, delete-orphan"
+    )
+
+    container_stats = relationship(
+        "ContainerStats", 
+        cascade="all, delete-orphan"
+    )
+    alert_history = relationship(
+        "AlertHistory", 
+        cascade="all, delete-orphan"
+    )
 
 
 class Permission(Base):
@@ -210,3 +232,17 @@ class AlertHistory(Base):
     labels = Column(Text, nullable=True)  # JSON string of labels
     created_at = Column(DateTime, default=datetime.now, index=True)
     updated_at = Column(DateTime, onupdate=datetime.now)
+
+class Notification(Base):
+    '''This class defines the notification model for tracking notifications sent to users'''
+    __tablename__ = 'notification'
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False, index=True)
+    rol_id = Column(Integer, ForeignKey('roles.id'), nullable=True)
+    name = Column(String, nullable=False)
+    description = Column(Text, nullable=False)
+    read_by_user = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.now, index=True)
+    updated_at = Column(DateTime, onupdate=datetime.now)
+    deleted_at = Column(String, index=True)

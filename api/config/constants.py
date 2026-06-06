@@ -1,4 +1,9 @@
 import os
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
 # API
 API_PREFIX = "/api"
 
@@ -44,3 +49,6 @@ TEMP_FILES_PATH = "api/files/temp"
 MONITORING_FILES_PATH = "api/files/monitoring"
 RULES_FILES_PATH = "api/files/rules"
 REMOVE_TEMP_FILES = False
+
+# ANTES DE PUSHEAR METER COMO VARIABLES DE ENTORNO
+GOOGLE_CLIENT_ID=os.getenv("GOOGLE_CLIENT_ID")

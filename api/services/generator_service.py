@@ -60,6 +60,17 @@ def docker_compose_generator(app: App):
         service['labels'] = labels
         yaml_obj[0]['services'][name] = service
 
+    # Ensure all networks referenced by services are defined in the networks section
+    for service in yaml_obj[0]['services'].values():
+        if 'networks' in service and service['networks']:
+            for network in service['networks']:
+                if isinstance(network, str) and network not in yaml_obj[0]['networks']:
+                    yaml_obj[0]['networks'][network] = {}
+                elif isinstance(network, dict):
+                    for net_name in network.keys():
+                        if net_name not in yaml_obj[0]['networks']:
+                            yaml_obj[0]['networks'][net_name] = {}
+
     path = Path.cwd() / TEMP_FILES_PATH / app.name / "docker-compose.yml"
     path.parent.mkdir(parents=True, exist_ok=True)
     write_yaml(yaml_obj, path)

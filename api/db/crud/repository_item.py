@@ -32,6 +32,10 @@ def get_by_id(db, repository_item_id: int):
     ''' Get repository item by ID without user context '''
     return db.query(models.RepositoryItem).filter(models.RepositoryItem.id == repository_item_id).first()
 
+def get_by_app_id(db, app_id: int):
+    ''' Get repository item by app ID '''
+    return db.query(models.RepositoryItem).filter(models.RepositoryItem.app_id == app_id).first()
+
 def build_repository_items_with_stats_query(db, user_id: int):
     votes = func.sum(
         case(

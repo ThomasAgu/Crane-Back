@@ -1,0 +1,46 @@
+networks:
+  Network 1: {}
+  crane-net: {}
+  prometheus-net:
+    external: true
+services:
+  nombre:
+    command: npm run start
+    environment:
+      AAAA: AAA
+    image: php
+    labels:
+    - a.label.name=nuerbsdf
+    - traefik.http.routers.nuerbsdf.rule=Host(`nuerbsdf-nombre.docker.localhost`)
+    networks:
+    - Network 1
+    ports:
+    - 1293:12030
+    resources:
+      limits:
+        cpus: '1.5'
+        memory: 512M
+    restart_policy: always
+    startup_scripts: []
+    volumes:
+    - /:/data
+  traefik-proxy:
+    command:
+    - --api.insecure=true
+    - --providers.docker=true
+    - --accesslog=true
+    - --accesslog.format=json
+    - --metrics.prometheus=true
+    - --metrics.prometheus.buckets=0.1,0.3,1.2,5.0
+    - --entrypoints.web.address=:80
+    - --providers.docker.constraints=Label(`a.label.name`, `nuerbsdf`)
+    - --providers.docker.watch=true
+    image: traefik:latest
+    networks:
+    - crane-net
+    - prometheus-net
+    ports:
+    - 0:80
+    - 0:8080
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock

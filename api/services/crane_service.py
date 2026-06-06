@@ -2,6 +2,7 @@
 import json
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from starlette import status
 import api.db.crud.app_crud as AppCrud
 from api.schemas.app import App, AppDocker, ProxyRoute
 from api.clients.docker_client import get_docker_client
@@ -132,15 +133,28 @@ async def stop(db: Session, app_id: str, user_id: int):
     return {"message": f"App {app.name} stopped"}
 
 
-async def delete(db: Session, app_id: str, user_id: int):
-    ''' Delete app on db and docker compose '''
-    app = await get_app_with_docker(db, app_id, user_id)
-    app.docker.compose.down()
-    docker_compose_remove(app.name)
-    prometheus_scrape_remove(app.name)
-    await restart_monitoring()
-    AppCrud.delete_physical(db, app.name, user_id)
-    return {"message": f"App {app.name} deleted"}
+async def delete(db: Session, app_id: int, user_id: int):
+    """Delete app on db and docker compose."""
+    try:
+        app = await get_app_with_docker(db, app_id, user_id)
+
+        app.docker.compose.down()
+        docker_compose_remove(app.name)
+        prometheus_scrape_remove(app.name)
+        await restart_monitoring()
+
+        deleted_app = AppCrud.delete_physical(db, app_id, user_id)
+
+        return {"message": f"App {deleted_app.name} deleted"}
+
+    except HTTPException:
+        raise
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
 
 
 async def logs(db: Session, app_id: str, user_id: int):
@@ -168,6 +182,14 @@ async def get_app_by_id(db, app_id: int, user_id: int = None):
     app.hosts = json.loads(app.hosts)
     return app
 
+async def get_app_by_name_and_user_id(db, app_name: str, user_id: int):
+    ''' Get app by name and user_id '''
+    app = AppCrud.get_by_name_and_user_id(db, app_name, user_id)
+    if not app:
+        return None
+    app.services = json.loads(app.services)
+    app.hosts = json.loads(app.hosts)
+    return app
 
 async def get_app_with_docker(db, app_id: int, user_id: int = None):
     ''' Get app by id with docker client '''

@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from starlette import status
 from api.schemas.app import App
 from api.db.database import get_db
 from api.routes.auth_routes import verify_jwt
@@ -17,6 +18,10 @@ async def get(db_user=Depends(verify_jwt), db: Session = Depends(get_db)):
 
 @appRouter.post("/", tags=["Apps"], description="Create a new app")
 async def create(app: App, db_user=Depends(verify_jwt), db: Session = Depends(get_db)):
+    appExist = await CraneService.get_app_by_name_and_user_id(db, app.name, db_user.id)
+    if appExist:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="App with this name already exists")
+    
     app = await CraneService.create(db, app, db_user.id)
     return app
 

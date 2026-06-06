@@ -23,12 +23,21 @@ def get_by_email(db: Session, email: str):
 def register(db: Session, user: schemas.UserCreate):
     ''' Register a new user '''
     hashed_password = pbkdf2_sha256.hash(user.password, salt=SECRET_KEY)
+    
     db_user = models.User(
         email=user.email,
         password=hashed_password,
         full_name=user.full_name,
     )
+    
+    db_user_role = models.UserRole(
+        user=db_user,
+        role_id=2
+    )
+
     db.add(db_user)
+    db.add(db_user_role)
+    
     db.commit()
     db.refresh(db_user)
     return db_user

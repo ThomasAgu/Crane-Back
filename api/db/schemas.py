@@ -69,6 +69,8 @@ class UserLogin(BaseModel):
     email: str
     password: str
 
+class UserLoginGoogle(BaseModel):
+    access_token: str
 
 class Role(BaseModel):
     id: Optional[int]
@@ -125,3 +127,8 @@ class ScenarioCreate(BaseModel):
     description: str
     category: str
     function_name: str
+
+class NotificationCreate(BaseModel):
+    user_id: int
+    name: str
+    description: Optional[str] = None
