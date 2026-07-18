@@ -22,7 +22,67 @@ scrape_configs:
   static_configs:
   - targets:
     - 172.24.0.4:8080
-- job_name: themeti-15
+- job_name: ANACHE-2
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - None:8080
+- job_name: ANACHE2-3
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - None:8080
+- job_name: nombredeappp-4
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.3:8080
+- job_name: nombredeappp-1
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.4:8080
+- job_name: miprimerservidorconcrane-1
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.3:8080
+- job_name: miprimeraappconcrane-1
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.3:8080
+- job_name: aplicacionconsejos-2
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.4:8080
+- job_name: app1-1
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.3:8080
+- job_name: jicv2026-3
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.3:8080
+- job_name: aplicacion-1
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.3:8080
+- job_name: appnueva-1
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.3:8080
+- job_name: app1-2
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.3:8080
+- job_name: app23-3
   scrape_interval: 5s
   static_configs:
   - targets:

@@ -12,45 +12,69 @@ from api.services.monitoring_service import restart_monitoring
 from api.db import models, schemas
 from datetime import datetime
 
-
 async def create(db: Session, app: App, user_id: int):
-    ''' 
-        This function creates a new app in the database, 
-        generates the docker-compose.yml file and starts the app. 
-    '''
-    # get user id
     app.user_id = user_id
 
-    # create app in db
+    # 1. Crear pre-registro en la base de datos
     db_app = AppCrud.create(db, app)
-
-    # generate app name with selected name and id
+    
+    # Reasignamos el nombre con el ID autoincremental de la DB
     app.name = f"{db_app.name}-{db_app.id}"
+    
+    docker_started = False
+    temp_files_generated = False
 
-    # create docker compose file and start app
-    compose = docker_compose_generator(app)
-    docker = await get_docker_client(app.name)
-    docker.compose.build()
-    docker.compose.up(detach=True)
+    try:
+        # 2. Intentar generar el docker-compose
+        compose = docker_compose_generator(app)
+        temp_files_generated = True
 
-    # get proxy container ip and ports
-    proxy_route = await get_router_dir(app.name, docker)
-    db_app.hosts = compose['hosts']
-    db_app.services = json.loads(db_app.services)
+        # 3. Intentar levantar los contenedores con Docker
+        docker = await get_docker_client(app.name)
+        docker.compose.build()
+        docker.compose.up(detach=True)
+        docker_started = True  # Bandera por si tenemos que hacer rollback del contenedor
 
-    # update app in db
-    AppCrud.update(db, db_app)
+        # 4. Configuración de redes y proxy
+        proxy_route = await get_router_dir(app.name, docker)
+        db_app.hosts = compose['hosts']
+        db_app.services = json.loads(db_app.services)
 
-    # create prometheus yaml file
-    prometheus_scrape_generator(app.name, proxy_route.ip)
+        # Actualizar estado exitoso en la DB
+        AppCrud.update(db, db_app)
 
-    # restart monitoring docker compose
-    await restart_monitoring()
+        # 5. Métricas (Prometheus)
+        prometheus_scrape_generator(app.name, proxy_route.ip)
+        await restart_monitoring()
 
-    # remove temp files
-    docker_compose_remove(app.name)
+    except Exception as e:
+        # --- CONTROL DE ERRORES Y ROLLBACK ---
+        print(f"Error detectado durante el despliegue de la App: {str(e)}")
+        
+        # Si los contenedores llegaron a encenderse, los apagamos y removemos
+        if docker_started:
+            try:
+                docker.compose.down(volumes=True)
+            except Exception:
+                pass
+        
+        # Eliminar registro fallido de la DB para no ensuciar el dashboard del usuario
+        try:
+            AppCrud.delete(db, db_app.id)
+        except Exception:
+            pass
 
-    # finally return app
+        # Elevar una excepción limpia que el controlador de FastAPI pueda entender
+        raise HTTPException(
+            status_code=422, 
+            detail=f"Failed to build or orchestrate the app infrastructure. Error: {str(e)}"
+        )
+        
+    finally:
+        # Limpieza obligatoria de archivos temporales locales
+        if temp_files_generated:
+            docker_compose_remove(app.name)
+
     return db_app
 
 async def copy(db: Session, app_id: int, user_id: int):
@@ -137,13 +161,12 @@ async def delete(db: Session, app_id: int, user_id: int):
     """Delete app on db and docker compose."""
     try:
         app = await get_app_with_docker(db, app_id, user_id)
+        deleted_app = AppCrud.delete_physical(db, app.id, user_id)
 
         app.docker.compose.down()
         docker_compose_remove(app.name)
         prometheus_scrape_remove(app.name)
         await restart_monitoring()
-
-        deleted_app = AppCrud.delete_physical(db, app_id, user_id)
 
         return {"message": f"App {deleted_app.name} deleted"}
 
@@ -240,13 +263,28 @@ async def get_all(db, user_id: int, skip: int = 0, limit: int = 100):
 async def get_router_dir(app_name: str, docker):
     ''' Get proxy container ip and ports '''
     containers = docker.ps(filters={"name": app_name})
+    
     if not containers:
         return ProxyRoute(
             ip=None,
             ports=None,
             status="Stopped"
         )
-    proxy_container = [container for container in containers if container.name.startswith(app_name + "-traefik")][0]
+    
+    # Buscamos el contenedor de traefik de manera segura usando un generador
+    proxy_container = next(
+        (c for c in containers if c.name.startswith(f"{app_name}-traefik")), 
+        None
+    )
+    
+    # Si encontramos contenedores de la app, pero ninguno es el proxy de Traefik
+    if not proxy_container:
+        return ProxyRoute(
+            ip=None,
+            ports=None,
+            status="Degraded"  # O "Running" / "Stopped" según consideres tu arquitectura
+        )
+        
     return ProxyRoute(
         ip=proxy_container.network_settings.networks[PROMETHEUS_NETWORK_NAME].ip_address,
         ports=proxy_container.network_settings.ports,

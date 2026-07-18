@@ -167,3 +167,14 @@ def delete(db, repository_item_id: int):
         db.delete(repository_item)
         db.commit()
     return repository_item
+
+def update(db, db_obj: models.RepositoryItem, obj_in: dict):
+    ''' Actualiza los campos dinámicamente y guarda en la BD '''
+    for field in obj_in:
+        if hasattr(db_obj, field):
+            setattr(db_obj, field, obj_in[field])
+            
+    db.add(db_obj)
+    db.commit()
+    db.refresh(db_obj)
+    return db_obj

@@ -1,0 +1,66 @@
+networks:
+  crane-net: {}
+  prometheus-net:
+    external: true
+  red:
+    driver: bridge
+services:
+  service1:
+    command: sh -c 'npm install && node server.js'
+    environment:
+      DB_HOST: service2
+      DB_NAME: consejitos
+      DB_PASSWORD: pass
+      DB_USER: user
+    image: node
+    labels:
+    - a.label.name=aplicacionconsejos-2
+    - traefik.http.routers.aplicacionconsejos-2-service1.rule=Host(`aplicacionconsejos-2-service1.docker.localhost`)
+    networks:
+    - red
+    - crane-net
+    ports:
+    - '3000'
+    restart: unless-stopped
+    volumes:
+    - /:/app
+    - C:\Users\t-agu\OneDrive\Escritorio\tuki\crane-rest-api\api\files\temp\aplicacionconsejos-2\scripts\service1\package.json:/app/package.json
+    - C:\Users\t-agu\OneDrive\Escritorio\tuki\crane-rest-api\api\files\temp\aplicacionconsejos-2\scripts\service1\server.js:/app/server.js
+    working_dir: /app
+  service2:
+    environment:
+      MARIADB_DATABASE: consejitos
+      MARIADB_PASSWORD: pass
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_USER: user
+    image: mariadb
+    labels:
+    - a.label.name=aplicacionconsejos-2
+    - traefik.http.routers.aplicacionconsejos-2-service2.rule=Host(`aplicacionconsejos-2-service2.docker.localhost`)
+    networks:
+    - red
+    - crane-net
+    ports:
+    - '3306'
+    restart: unless-stopped
+    working_dir: /app
+  traefik-proxy:
+    command:
+    - --api.insecure=true
+    - --providers.docker=true
+    - --accesslog=true
+    - --accesslog.format=json
+    - --metrics.prometheus=true
+    - --metrics.prometheus.buckets=0.1,0.3,1.2,5.0
+    - --entrypoints.web.address=:80
+    - --providers.docker.constraints=Label(`a.label.name`, `aplicacionconsejos-2`)
+    - --providers.docker.watch=true
+    image: traefik:latest
+    networks:
+    - crane-net
+    - prometheus-net
+    ports:
+    - 0:80
+    - 0:8080
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock

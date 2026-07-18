@@ -1,20 +1,42 @@
 networks:
-  Network 1: {}
   crane-net: {}
   prometheus-net:
     external: true
 services:
-  ? ''
-  : environment: {}
-    image: ''
+  service1:
+    environment:
+      MYSQL_DATABASE: mydb
+      MYSQL_PASSWORD: userpass
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_USER: user
+    image: mysql
     labels:
+    - bdd
     - a.label.name=app1
-    - traefik.http.routers.app1.rule=Host(`app1-.docker.localhost`)
+    - traefik.http.routers.app1-service1.rule=Host(`app1-service1.docker.localhost`)
     networks:
-    - Network 1
-    ports: []
+    - crane-net
+    ports:
+    - '3306'
+    restart: unless-stopped
     volumes:
-    - /:/data
+    - /:/var/lib/mysql
+    working_dir: /app
+  service2:
+    image: node
+    labels:
+    - anache
+    - aosdka
+    - a.label.name=app1
+    - traefik.http.routers.app1-service2.rule=Host(`app1-service2.docker.localhost`)
+    networks:
+    - crane-net
+    ports:
+    - '3000'
+    restart: unless-stopped
+    volumes:
+    - /:/app
+    working_dir: /app
   traefik-proxy:
     command:
     - --api.insecure=true

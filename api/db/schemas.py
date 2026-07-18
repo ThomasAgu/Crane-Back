@@ -1,5 +1,6 @@
-from typing import Optional
+from typing import List, Optional
 from datetime import datetime
+from datetime import date
 from pydantic import BaseModel
 
 
@@ -132,3 +133,28 @@ class NotificationCreate(BaseModel):
     user_id: int
     name: str
     description: Optional[str] = None
+
+class GroupCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    member_ids: Optional[List[int]] = None
+
+class TaskCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+
+class TaskGroupCreate(BaseModel):
+    task_id: int
+    group_id: int
+    deliver_date: Optional[date] = None
+    publish_date: Optional[date] = None
+
+class UserGroupCreate(BaseModel):
+    user_id: int
+    group_id: int
+    role_id: int
+
+class UserGroupRemove(BaseModel):
+    user_id: int
+    group_id: int
+    role_id: int

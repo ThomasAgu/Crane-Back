@@ -42,6 +42,7 @@ role_permissions := {
         {"action": "GET", "object": "NOTIFICATIONS"},
         {"action": "DELETE", "object": "NOTIFICATIONS"},
         {"action": "POST", "object": "NOTIFICATIONS"},
+        {"action": "GET", "object": "GROUPS"},
     ],
     "USER":  [
         {"action": "GET",  "object": "APPS"},
@@ -51,6 +52,7 @@ role_permissions := {
         {"action": "GET",  "object": "ROLES"},
         {"action": "GET", "object": "REPOSITORY"},
         {"action": "POST", "object": "REPOSITORY"},
+        {"action": "PATCH", "object": "REPOSITORY"},
         {"action": "GET", "object": "NOTIFICATIONS"},
         {"action": "DELETE", "object": "NOTIFICATIONS"},
         {"action": "POST", "object": "NOTIFICATIONS"},
@@ -69,7 +71,7 @@ role_permissions := {
         {"action": "PATCH",  "object": "MONITORING"},
         {"action": "DELETE",  "object": "MONITORING"},
         {"action": "GET",  "object": "RULES"},
-        {"action": "GET",  "object": "ROLES"},
+        {"action": "GET",  "object": "ROLES"}, 
         {"action": "GET", "object": "REPOSITORY"},
         {"action": "POST", "object": "REPOSITORY"},
         {"action": "PATCH", "object": "REPOSITORY"},
@@ -83,24 +85,86 @@ role_permissions := {
         {"action": "GET", "object": "NOTIFICATIONS"},
         {"action": "DELETE", "object": "NOTIFICATIONS"},
         {"action": "POST", "object": "NOTIFICATIONS"},
+        {"action": "GET", "object": "GROUPS"},
+        {"action": "DELETE", "object": "GROUPS"},
+        {"action": "POST", "object": "GROUPS"},
+        {"action": "GET", "object": "TASKS"},
+        {"action": "DELETE", "object": "TASKS"},
+        {"action": "POST", "object": "TASKS"},
+    ],
+    "PROFESSOR": [
+        {"action": "GET",  "object": "APPS"},
+        {"action": "POST",  "object": "APPS"},
+        {"action": "PATCH",  "object": "APPS"},
+        {"action": "DELETE",  "object": "APPS"},
+        {"action": "GET",  "object": "MONITORING"},
+        {"action": "POST",  "object": "MONITORING"},
+        {"action": "PATCH",  "object": "MONITORING"},
+        {"action": "DELETE",  "object": "MONITORING"},
+        {"action": "GET",  "object": "RULES"},
+        {"action": "GET",  "object": "ROLES"},
+        {"action": "GET", "object": "REPOSITORY"},
+        {"action": "POST", "object": "REPOSITORY"},
+        {"action": "PATCH", "object": "REPOSITORY"},
+        {"action": "DELETE", "object": "REPOSITORY"},
+        {"action": "GET", "object": "ACTION"},
+        {"action": "GET", "object": "ALERT"},
+        {"action": "POST", "object": "ALERT"},
+        {"action": "PATCH", "object": "ALERT"},
+        {"action": "DELETE", "object": "ALERT"},
+        {"action": "GET", "object": "NOTIFICATIONS"},
+        {"action": "DELETE", "object": "NOTIFICATIONS"},
+        {"action": "POST", "object": "NOTIFICATIONS"},
+        {"action": "GET", "object": "GROUPS"},
+        {"action": "DELETE", "object": "GROUPS"},
+        {"action": "POST", "object": "GROUPS"},
+        {"action": "GET", "object": "TASKS"},
+        {"action": "DELETE", "object": "TASKS"},
+        {"action": "POST", "object": "TASKS"},
+    ],
+    "STUDENT": [
+        {"action": "GET",  "object": "APPS"},
+        {"action": "POST",  "object": "APPS"},
+        {"action": "PATCH",  "object": "APPS"},
+        {"action": "DELETE",  "object": "APPS"},
+        {"action": "GET",  "object": "OPA"},
+        {"action": "POST",  "object": "OPA"},
+        {"action": "PATCH",  "object": "OPA"},
+        {"action": "DELETE",  "object": "OPA"},
+        {"action": "GET",  "object": "MONITORING"},
+        {"action": "POST",  "object": "MONITORING"},
+        {"action": "PATCH",  "object": "MONITORING"},
+        {"action": "DELETE",  "object": "MONITORING"},
+        {"action": "GET",  "object": "RULES"},
+        {"action": "GET",  "object": "ROLES"},
+        {"action": "GET", "object": "REPOSITORY"},
+        {"action": "POST", "object": "REPOSITORY"},
+        {"action": "PATCH", "object": "REPOSITORY"},
+        {"action": "DELETE", "object": "REPOSITORY"},
+        {"action": "GET", "object": "ACTION"},
+        {"action": "GET", "object": "ALERT"},
+        {"action": "POST", "object": "ALERT"},
+        {"action": "PATCH", "object": "ALERT"},
+        {"action": "DELETE", "object": "ALERT"},
+        {"action": "GET", "object": "NOTIFICATIONS"},
+        {"action": "DELETE", "object": "NOTIFICATIONS"},
+        {"action": "POST", "object": "NOTIFICATIONS"},
+        {"action": "GET", "object": "GROUPS"},
+        {"action": "GET", "object": "TASKS"},
     ],
 }
 
 # logic that implements RBAC.
 default allow := false
 allow if {
-    # lookup the list of roles for the user
-    roles := input.roles
-
-    # for each role in that list
-    r := roles[_]
-
-    # lookup the permissions list for role r
+    # 1. Obtenemos el rol del input
+    some r in input.roles
+    
+    # 2. Obtenemos el array de permisos de ese rol de forma segura
     permissions := role_permissions[r]
-
-    # for each permission
-    p := permissions[_]
-
-    # check if the permission granted to r matches the user's request
-    p == {"action": input.action, "object": input.object}
+    
+    # 3. Buscamos si el permiso solicitado está dentro de ese array
+    some p in permissions
+    p.action == input.action
+    p.object == input.object
 }

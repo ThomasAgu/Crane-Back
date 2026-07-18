@@ -1,0 +1,37 @@
+networks:
+  Network 1: {}
+  crane-net: {}
+  prometheus-net:
+    external: true
+services:
+  ? ''
+  : environment: {}
+    image: ''
+    labels:
+    - a.label.name=app1-9
+    - traefik.http.routers.app1-9.rule=Host(`app1-9-.docker.localhost`)
+    networks:
+    - Network 1
+    ports: []
+    volumes:
+    - /:/data
+  traefik-proxy:
+    command:
+    - --api.insecure=true
+    - --providers.docker=true
+    - --accesslog=true
+    - --accesslog.format=json
+    - --metrics.prometheus=true
+    - --metrics.prometheus.buckets=0.1,0.3,1.2,5.0
+    - --entrypoints.web.address=:80
+    - --providers.docker.constraints=Label(`a.label.name`, `app1-9`)
+    - --providers.docker.watch=true
+    image: traefik:latest
+    networks:
+    - crane-net
+    - prometheus-net
+    ports:
+    - 0:80
+    - 0:8080
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock

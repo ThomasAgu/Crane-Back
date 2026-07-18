@@ -2,6 +2,7 @@
 from datetime import datetime
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text, DateTime
 from sqlalchemy.orm import relationship
+from sqlalchemy import event
 
 
 from .database import Base
@@ -66,6 +67,8 @@ class App(Base):
     updated_at = Column(DateTime, onupdate=datetime.now)
     deleted_at = Column(String, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
+    is_uploaded = Column(Boolean, index=True, default=False)
+
     user = relationship("User", back_populates="apps")
     
     custom_alerts = relationship(
@@ -84,8 +87,16 @@ class App(Base):
         "ContainerStats", 
         cascade="all, delete-orphan"
     )
+    
     alert_history = relationship(
         "AlertHistory", 
+        cascade="all, delete-orphan"
+    )
+
+    repository_item = relationship(
+        "RepositoryItem", 
+        back_populates="app", 
+        uselist=False, 
         cascade="all, delete-orphan"
     )
 
@@ -128,6 +139,8 @@ class RepositoryItem(Base):
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, onupdate=datetime.now)
     deleted_at = Column(String, index=True)
+
+    app = relationship("App", back_populates="repository_item")
 
 class Vote(Base):
     ''' This class defines the vote model '''
@@ -246,3 +259,89 @@ class Notification(Base):
     created_at = Column(DateTime, default=datetime.now, index=True)
     updated_at = Column(DateTime, onupdate=datetime.now)
     deleted_at = Column(String, index=True)
+
+class Group(Base):
+    '''This class defines the group model for organizing users'''
+    __tablename__ = 'groups'
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    created_by = Column(Integer, ForeignKey('users.id'), nullable=False)
+
+    created_at = Column(DateTime, default=datetime.now, index=True)
+    updated_at = Column(DateTime, onupdate=datetime.now)
+    deleted_at = Column(String, index=True)
+
+    creator = relationship("User")
+    user_groups = relationship("UserGroup", back_populates="group", cascade="all, delete-orphan")
+    tasks = relationship("GroupTask", back_populates="group")
+
+class Task(Base):
+    '''This class defines the task model for scheduling tasks'''
+    __tablename__ = 'tasks'
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    created_by = Column(Integer, ForeignKey('users.id'), nullable=False)
+    
+    created_at = Column(DateTime, default=datetime.now, index=True)
+    updated_at = Column(DateTime, onupdate=datetime.now)
+    deleted_at = Column(String, index=True)
+
+    creator = relationship("User")
+    groups = relationship("GroupTask", back_populates="task", cascade="all, delete-orphan")
+
+class GroupTask(Base):
+    '''This class defines the group task model for associating tasks with groups'''
+    __tablename__ = 'group_tasks'
+    
+    id = Column(Integer, primary_key=True, index=True)
+    deliver_date = Column(DateTime, nullable=True)
+    publish_date = Column(DateTime, nullable=True)
+    group_id = Column(Integer, ForeignKey('groups.id'), nullable=False, index=True)
+    task_id = Column(Integer, ForeignKey('tasks.id'), nullable=False, index=True)
+    created_at = Column(DateTime, default=datetime.now, index=True)
+    updated_at = Column(DateTime, onupdate=datetime.now)
+    deleted_at = Column(String, index=True)
+
+    group = relationship("Group", back_populates="tasks")
+    task = relationship("Task", back_populates="groups")
+
+class UserGroup(Base):
+    '''This class defines the user group model for associating users with groups'''
+    __tablename__ = 'user_groups'
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False, index=True)
+    group_id = Column(Integer, ForeignKey('groups.id'), nullable=False, index=True)
+    role_id = Column(Integer, ForeignKey('roles.id'), nullable=False)
+    created_at = Column(DateTime, default=datetime.now, index=True)
+    updated_at = Column(DateTime, onupdate=datetime.now)
+    deleted_at = Column(String, index=True)
+
+    user = relationship("User")
+    group = relationship("Group", back_populates="user_groups")
+    role = relationship("Role")
+
+
+# 🚀 Evento 1: Cuando se CREA un RepositoryItem, cambia is_uploaded a True
+@event.listens_for(RepositoryItem, 'after_insert')
+def set_is_uploaded_true(mapper, connection, target):
+    if target.app_id:
+        connection.execute(
+            App.__table__.update()
+            .where(App.__table__.c.id == target.app_id)
+            .values(is_uploaded=True)
+        )
+
+# 🚀 Evento 2: Cuando se ELIMINA un RepositoryItem, cambia is_uploaded a False
+@event.listens_for(RepositoryItem, 'after_delete')
+def set_is_uploaded_false(mapper, connection, target):
+    if target.app_id:
+        connection.execute(
+            App.__table__.update()
+            .where(App.__table__.c.id == target.app_id)
+            .values(is_uploaded=False)
+        )

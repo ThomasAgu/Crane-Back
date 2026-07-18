@@ -1,4 +1,3 @@
-import re
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -81,6 +80,26 @@ async def create_repository_item(
     db: Session = Depends(get_db)
 ):
     return await RepositoryItemService.create_repository_item(
+        db,
+        item.name,
+        item.description,
+        item.services,
+        item.app_id,
+        item.user_id
+    )
+
+@repositoryRouter.patch(
+    "/",
+    tags=["Repository Items"],
+    description="update a repository item",
+    response_model_exclude_none=True,
+    dependencies=[Depends(verify_jwt)]
+)
+async def update_repository_item(
+    item: repository_item.RepositoryItemCreate,
+    db:  Session = Depends(get_db)
+): 
+    return await RepositoryItemService.update_repository_item(
         db,
         item.name,
         item.description,

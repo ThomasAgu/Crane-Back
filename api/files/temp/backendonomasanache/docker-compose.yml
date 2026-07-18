@@ -1,0 +1,46 @@
+networks:
+  crane-net: {}
+  prometheus-net:
+    external: true
+  red1:
+    driver: bridge
+services:
+  service1:
+    command: node index.js
+    image: node
+    labels:
+    - hola
+    - a.label.name=backendonomasanache
+    - traefik.http.routers.backendonomasanache-service1.rule=Host(`backendonomasanache-service1.docker.localhost`)
+    networks:
+    - red1
+    - crane-net
+    ports:
+    - '3000'
+    restart: unless-stopped
+    volumes:
+    - /:/app
+    - C:\Users\t-agu\OneDrive\Escritorio\tuki\crane-rest-api\api\files\temp\backendonomasanache\scripts\service1\index.js:/app/index.js
+    - C:\Users\t-agu\OneDrive\Escritorio\tuki\crane-rest-api\api\files\temp\backendonomasanache\scripts\service1\package.json:/app/package.json
+    - C:\Users\t-agu\OneDrive\Escritorio\tuki\crane-rest-api\api\files\temp\backendonomasanache\scripts\service1\test.txt:/app/test.txt
+    working_dir: /app
+  traefik-proxy:
+    command:
+    - --api.insecure=true
+    - --providers.docker=true
+    - --accesslog=true
+    - --accesslog.format=json
+    - --metrics.prometheus=true
+    - --metrics.prometheus.buckets=0.1,0.3,1.2,5.0
+    - --entrypoints.web.address=:80
+    - --providers.docker.constraints=Label(`a.label.name`, `backendonomasanache`)
+    - --providers.docker.watch=true
+    image: traefik:latest
+    networks:
+    - crane-net
+    - prometheus-net
+    ports:
+    - 0:80
+    - 0:8080
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock

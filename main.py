@@ -19,6 +19,8 @@ from api.routes.scenario_routes import scenarioRouter
 from api.routes.report_routes import reportRouter
 from api.routes.docker_hub_routes import dockerHubRouter
 from api.routes.notification_routes import notificationRouter
+from api.routes.group_routes import groupRouter
+from api.routes.task_routes import taskRouter
 from api.config.constants import API_PREFIX, OPA_RBAC_CONFIG_NAME, OPA_RBAC_CONFIG_FILE, OPA_ALERT_RULES_CONFIG_NAME, OPA_ALERT_RULES_CONFIG_FILE
 from api.clients.opa_client import update_policies_file, update_or_create_opa_data
 from api.services.policy_update_service import update_or_create_roles_and_permissions_in_db
@@ -140,6 +142,8 @@ router.include_router(scenarioRouter, prefix="/v1/scenario")
 router.include_router(dockerHubRouter, prefix="/v1/docker-hub")
 router.include_router(reportRouter, prefix="/v1/reports")
 router.include_router(notificationRouter, prefix="/v1/notifications")
+router.include_router(groupRouter, prefix="/v1/groups")
+router.include_router(taskRouter, prefix="/v1/tasks")
 
 app.include_router(router, prefix=API_PREFIX)
 

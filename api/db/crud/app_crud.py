@@ -32,17 +32,38 @@ def get_all_by_service(db: Session, skip: int = 0, limit: int = 100):
 
 def create(db: Session, user_app: schemas.AppCreate):
     ''' Create app '''
-    app_dict = user_app.dict()
-    app_dict["services"] = json.dumps(app_dict["services"])
-    app_dict["hosts"] = json.dumps(app_dict["hosts"])
+    # 1. Convertimos el schema a diccionario
+    # (Nota: si usas Pydantic v2, es mejor usar .model_dump() en vez de .dict())
+    app_dict = user_app.dict() if hasattr(user_app, 'dict') else user_app.model_dump()
+    
+    # 2. Serializamos lo que va como string/JSON a la base de datos
+    # Usamos .get() por seguridad o fallback a listas vacías
+    services_list = app_dict.get("services") or []
+    hosts_list = app_dict.get("hosts") or []
+    
+    # Si los servicios vienen como objetos de Pydantic complejos dentro de la lista,
+    # nos aseguramos de convertirlos a diccionarios puros antes del json.dumps
+    clean_services = [
+        s.dict() if hasattr(s, 'dict') else (s.model_dump() if hasattr(s, 'model_dump') else s)
+        for s in services_list
+    ]
+    
+    app_dict["services"] = json.dumps(clean_services)
+    app_dict["hosts"] = json.dumps(hosts_list)
 
+    # 3. FILTRAR CAMPOS: Extraemos 'environment' (y cualquier otro campo extra del front)
+    # para que NO se envíe al constructor de SQLAlchemy
+    app_dict.pop("environment", None) 
+    # Si 'startup_scripts' o cualquier otra propiedad estuviera a nivel de App, la sacas acá también:
+    # app_dict.pop("startup_scripts", None)
+
+    # 4. Ahora sí, instanciamos el modelo de la DB sin peligro de invalid keywords
     db_app = models.App(**app_dict)
 
     db.add(db_app)
     db.commit()
     db.refresh(db_app)
     return db_app
-
 
 def update(db: Session, app: schemas.App):
     ''' Update app '''
@@ -63,17 +84,11 @@ def delete_logical(db: Session, app_id: str, user_id: int = None):
 
 
 def delete_physical(db: Session, app_id: int, user_id: int = None):
+    """Delete app physically from database. Repository check should be done before calling this."""
     db_app = get_by_id(db, app_id, user_id)
     
     if not db_app:
         return None
-
-    app_in_repo = db.query(RepositoryItem).filter(RepositoryItem.app_id == app_id).first()
-    if app_in_repo:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No se puede eliminar la aplicación porque está publicada en el repositorio."
-        )
 
     db.delete(db_app)
     db.commit()

@@ -6,6 +6,8 @@ import api.db.crud.favourite_crud as favouriteCrud
 import api.db.schemas as schemas
 import api.db.crud.notification_crud as notificationCrud
 import api.db.models as models
+from fastapi import HTTPException
+
 from api.services.crane_service import copy as copy_app_service
 
 
@@ -85,6 +87,38 @@ async def create_repository_item(db, name: str, description: str, services: str,
         description=f"Your repository item '{repository_item.name}' is pending approval!"
     )
     notificationCrud.create(db, notification=notification_data)
+    return repository_item
+
+async def update_repository_item(db, name: str, description: str, services: str, app_id: int, user_id: int):
+    ''' Update an existing repository item based on its app_id '''
+    
+    # 1. Buscar el repository item existente usando el app_id
+    repository_item = repositoryItemCrud.get_by_app_id(db, app_id)
+    
+    if not repository_item:
+        # Puedes manejar esto con una excepción de FastAPI o retornar None
+        raise HTTPException(status_code=404, detail="Repository item not found for this app")
+        
+    # 2. Preparar los datos actualizados. 
+    updated_data = {
+        "name": name,
+        "description": description,
+        "services": services,
+        "state": "pending",  
+        "user_id": user_id
+    }
+    
+    # 3. Llamar al CRUD para actualizar el registro
+    repository_item = repositoryItemCrud.update(db, db_obj=repository_item, obj_in=updated_data)
+    
+    # 4. Enviar notificación de que volvió a quedar pendiente de aprobación
+    notification_data = schemas.NotificationCreate(
+        user_id=repository_item.user_id,
+        name=f"Your repository item '{repository_item.name}' has been updated and is pending approval!",
+        description=f"The repository item '{repository_item.name}' was modified and needs to be re-approved."
+    )
+    notificationCrud.create(db, notification=notification_data)
+    
     return repository_item
 
 async def approve_repository_item(db, repository_item_id: int):
