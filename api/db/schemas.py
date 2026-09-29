@@ -39,6 +39,7 @@ class AppCreate(App):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     deleted_at: Optional[str] = None
+    is_template: Optional[bool] = False
 
 
 class UserBase(BaseModel):

@@ -46,8 +46,22 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = UserRepository.get_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
-    UserRepository.register(db=db, user=user)
-    return {"message": "User created successfully"}
+    db_user = UserRepository.register(db=db, user=user)
+
+    roles = get_roles_by_user(db, db_user)
+    user_roles = {db_user.email: [role.name for role in roles]}
+    payload = {
+        "user_id": db_user.id,
+        "email": db_user.email,
+        "roles": user_roles.get(db_user.email)
+    }
+    access_token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "expires_in": JWT_EXPIRATION_TIME_MINUTES
+    }
 
 
 def decode_token(token: str, jwt_secret: str, jwt_algorithm: str):

@@ -72,18 +72,23 @@ scrape_configs:
   static_configs:
   - targets:
     - 172.20.0.3:8080
-- job_name: appnueva-1
+- job_name: templateone-1
   scrape_interval: 5s
   static_configs:
   - targets:
     - 172.20.0.3:8080
-- job_name: app1-2
+- job_name: con_alertascreadas-6
   scrape_interval: 5s
   static_configs:
   - targets:
     - 172.20.0.3:8080
-- job_name: app23-3
+- job_name: aaapp2-8
   scrape_interval: 5s
   static_configs:
   - targets:
-    - 172.20.0.2:8080
+    - 172.20.0.3:8080
+- job_name: consejitos2-2
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.4:8080

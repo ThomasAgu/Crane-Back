@@ -2,6 +2,7 @@
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from pydantic import BaseModel, Field
+from api.schemas.alert import CustomAlert
 
 class VolumeConfig(BaseModel):
     path: str
@@ -37,28 +38,23 @@ class Service(BaseModel):
 class App(BaseModel):
     id: Optional[int] = None
     name: str
-    services: List[Service] = Field(default_factory=list) # Ahora usa el schema Service
+    services: List[Service] = Field(default_factory=list)
     hosts: Optional[List[str]] = Field(default_factory=list)
     min_scale: Optional[int] = 0
     current_scale: Optional[int] = 1
     max_scale: Optional[int] = 1
     force_stop: Optional[bool] = False
-    environment: Optional[Dict[str, str]] = Field(default_factory=dict) # Env globales de la App
+    environment: Optional[Dict[str, str]] = Field(default_factory=dict)
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     deleted_at: Optional[datetime] = None
     user_id: Optional[int] = None
+    is_template: bool = False
     is_uploaded: bool = False
-
-class Service(BaseModel):
-    ''' This class defines the service schema contained in the app schema '''
-    name: str
-    image: str
-    command: Optional[str] = None
-    ports: Optional[list] = None
-    volumes: Optional[list] = None
-    networks: Optional[list] = None
-    labels: Optional[list] = None
+    repository_state: Optional[str] = None
+    repository_updated_at: Optional[datetime] = None
+    # Custom alerts attached to the app (from frontend)
+    alerts: Optional[List[CustomAlert]] = Field(default_factory=list)
 
 class AppDocker(App):
     ''' This class defines the app schema with docker dynamic fields '''
@@ -66,6 +62,8 @@ class AppDocker(App):
     ip: Optional[str] = None
     ports: Optional[dict] = None
     status: Optional[str] = None
+    host_links: List[Dict[str, Any]] = Field(default_factory=list)
+    traefik: Optional[Dict[str, Any]] = None
 
 
 class ProxyRoute(BaseModel):

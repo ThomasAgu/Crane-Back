@@ -79,6 +79,17 @@ async def download_repository_item(db, user_id: int, repository_item_id: int):
 
 async def create_repository_item(db, name: str, description: str, services: str, app_id: int, user_id: int):
     ''' Create a new repository item '''
+    existing_item = repositoryItemCrud.get_by_app_id(db, app_id)
+    if existing_item:
+        if existing_item.state == "pending":
+            raise HTTPException(
+                status_code=409,
+                detail="Ya existe una solicitud pendiente de aprobación para este proyecto."
+            )
+        raise HTTPException(
+            status_code=409,
+            detail="Este proyecto ya está registrado en el repositorio; debes solicitar una actualización."
+        )
     repository_item = repositoryItemCrud.create(db, name, description, services, app_id, user_id)
     '''Add a notification for the owner of the repository item when the repository item is pending to approve'''
     notification_data = schemas.NotificationCreate(
@@ -98,6 +109,12 @@ async def update_repository_item(db, name: str, description: str, services: str,
     if not repository_item:
         # Puedes manejar esto con una excepción de FastAPI o retornar None
         raise HTTPException(status_code=404, detail="Repository item not found for this app")
+
+    if repository_item.state == "pending":
+        raise HTTPException(
+            status_code=409,
+            detail="Ya existe una actualización pendiente de aprobación para este proyecto."
+        )
         
     # 2. Preparar los datos actualizados. 
     updated_data = {

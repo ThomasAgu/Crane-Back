@@ -4,6 +4,7 @@ from sqlalchemy import case, func
 from sqlalchemy import func
 from api.db import models
 from api.db.crud.mapper.repository import map_repository_item_result
+from api.db.crud.app_crud import get_by_id as get_app_by_id
 
 
 def get_all(db, user_id: int, skip: int = 0, limit: int = 100):
@@ -16,7 +17,6 @@ def get_by_id_with_stats(db, repository_item_id: int, user_id: int):
     ''' Get repository item by ID '''
     query = build_repository_items_with_stats_query(db, user_id)
     row = query.filter(models.RepositoryItem.id == repository_item_id).first()
-
     if not row:
         return None
 
@@ -130,12 +130,15 @@ def download(db, repository_item_id: int):
 
 def create(db, name: str, description: str, services: str, app_id: int, user_id: int):
     ''' Create a new store item '''
+    app = get_app_by_id(db, app_id)
+
     db_repository_item = models.RepositoryItem(
         name=name,
         description=description,
         services=services,
         app_id=app_id,
-        user_id=user_id
+        user_id=user_id,
+        is_template=app.is_template
     )
     db.add(db_repository_item)
     db.commit()

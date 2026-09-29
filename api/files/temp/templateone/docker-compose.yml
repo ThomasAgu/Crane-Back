@@ -1,0 +1,68 @@
+networks:
+  crane-net: {}
+  prometheus-net:
+    external: true
+services:
+  qui:
+    image: nginx
+    labels:
+    - a.label.name=templateone
+    - traefik.http.routers.templateone-qui.rule=Host(`templateone-qui.docker.localhost`)
+    networks:
+    - crane-net
+    ports:
+    - '80'
+    - '443'
+    restart: unless-stopped
+    working_dir: /app
+  service1:
+    environment:
+      AAAA: AAAA
+    image: mysql
+    labels:
+    - a.label.name=templateone
+    - traefik.http.routers.templateone-service1.rule=Host(`templateone-service1.docker.localhost`)
+    networks:
+    - crane-net
+    ports:
+    - '3306'
+    restart: unless-stopped
+    volumes:
+    - /:/var/lib/mysql
+    - C:\Users\t-agu\OneDrive\Escritorio\tuki\crane-rest-api\api\files\temp\templateone\scripts\service1\#
+      Tuplas.py:/app/# Tuplas.py
+    working_dir: /app
+  traefik-proxy:
+    command:
+    - --api.insecure=true
+    - --providers.docker=true
+    - --accesslog=true
+    - --accesslog.format=json
+    - --metrics.prometheus=true
+    - --metrics.prometheus.buckets=0.1,0.3,1.2,5.0
+    - --entrypoints.web.address=:80
+    - --providers.docker.constraints=Label(`a.label.name`, `templateone`)
+    - --providers.docker.watch=true
+    image: traefik:latest
+    networks:
+    - crane-net
+    - prometheus-net
+    ports:
+    - 0:80
+    - 0:8080
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+  tukitr:
+    environment:
+      MARIADB_DATABASE: mydb
+      MARIADB_ROOT_PASSWORD: rootpass
+    image: mariadb
+    labels:
+    - a.label.name=templateone
+    - traefik.http.routers.templateone-tukitr.rule=Host(`templateone-tukitr.docker.localhost`)
+    networks:
+    - crane-net
+    ports:
+    - '3306'
+    restart: unless-stopped
+    working_dir: /app

@@ -29,10 +29,11 @@ def register(db: Session, user: schemas.UserCreate):
         password=hashed_password,
         full_name=user.full_name,
     )
-    
+
+    # 4 = "User"
     db_user_role = models.UserRole(
         user=db_user,
-        role_id=2
+        role_id=4
     )
 
     db.add(db_user)

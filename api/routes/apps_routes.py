@@ -5,7 +5,7 @@ from api.schemas.app import App
 from api.db.database import get_db
 from api.routes.auth_routes import verify_jwt
 import api.services.crane_service as CraneService
-
+import api.services.repository_item_service as RepositoryItemService
 
 appRouter = APIRouter()
 
@@ -21,7 +21,7 @@ async def create(app: App, db_user=Depends(verify_jwt), db: Session = Depends(ge
     appExist = await CraneService.get_app_by_name_and_user_id(db, app.name, db_user.id)
     if appExist:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="App with this name already exists")
-    
+
     app = await CraneService.create(db, app, db_user.id)
     return app
 
@@ -40,6 +40,11 @@ async def get_app(app_id: str, db_user=Depends(verify_jwt), db: Session = Depend
 
 @appRouter.delete("/{app_id}", tags=["Apps"], description="Delete an app")
 async def delete(app_id: str, db_user=Depends(verify_jwt), db: Session = Depends(get_db)):
+    # Check that the app is not in a repository item before deleting
+    appInRepo = await RepositoryItemService.get_repository_item_by_id(db, app_id, db_user.id)
+    if (appInRepo):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="App is in a repository item, cannot be deleted")
+
     app = await CraneService.delete(db, app_id, db_user.id)
     return app
 

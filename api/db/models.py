@@ -68,6 +68,7 @@ class App(Base):
     deleted_at = Column(String, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     is_uploaded = Column(Boolean, index=True, default=False)
+    is_template = Column(Boolean, index=True, default=False)
 
     user = relationship("User", back_populates="apps")
     
@@ -134,6 +135,7 @@ class RepositoryItem(Base):
     services = Column(String, index=True)
     downloads = Column(Integer, default=0)
     state = Column(String, default="pending")
+    is_template = Column(Boolean, default=False)
     app_id = Column(Integer, ForeignKey("apps.id"))
     user_id = Column(Integer, ForeignKey("users.id"))
     created_at = Column(DateTime, default=datetime.now)

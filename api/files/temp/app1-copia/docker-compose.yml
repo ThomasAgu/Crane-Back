@@ -1,48 +1,25 @@
 networks:
   crane-net: {}
-  network1:
-    driver: bridge
   prometheus-net:
     external: true
 services:
   service1:
-    command: sh -c 'npm install && node server.js'
     environment:
-      DB_HOST: service2
-      DB_NAME: consejitos
-      DB_PASSWORD: pass
-      DB_USER: user
-    image: node
+      MYSQL_DATABASE: mydb
+      MYSQL_PASSWORD: userpass
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_USER: user
+    image: mysql
     labels:
     - a.label.name=app1-copia
     - traefik.http.routers.app1-copia-service1.rule=Host(`app1-copia-service1.docker.localhost`)
     networks:
-    - network1
-    - crane-net
-    ports:
-    - '3000'
-    restart: unless-stopped
-    volumes:
-    - /:/app
-    - C:\Users\t-agu\OneDrive\Escritorio\tuki\crane-rest-api\api\files\temp\app1-copia\scripts\service1\package.json:/app/package.json
-    - C:\Users\t-agu\OneDrive\Escritorio\tuki\crane-rest-api\api\files\temp\app1-copia\scripts\service1\server.js:/app/server.js
-    working_dir: /app
-  service2:
-    environment:
-      MARIADB_DATABASE: consejitos
-      MARIADB_PASSWORD: pass
-      MARIADB_ROOT_PASSWORD: root
-      MARIADB_USER: user
-    image: mariadb
-    labels:
-    - a.label.name=app1-copia
-    - traefik.http.routers.app1-copia-service2.rule=Host(`app1-copia-service2.docker.localhost`)
-    networks:
-    - network1
     - crane-net
     ports:
     - '3306'
     restart: unless-stopped
+    volumes:
+    - /:/var/lib/mysql
     working_dir: /app
   traefik-proxy:
     command:

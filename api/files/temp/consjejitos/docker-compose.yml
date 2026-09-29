@@ -1,0 +1,65 @@
+networks:
+  crane-net: {}
+  network1:
+    driver: bridge
+  prometheus-net:
+    external: true
+services:
+  node:
+    command: npm run dev
+    environment:
+      DB_HOST: service1
+      DB_NAME: consejitos
+      DB_PASSWORD: pass
+      DB_USER: user
+    image: node
+    labels:
+    - a.label.name=consjejitos
+    - traefik.http.routers.consjejitos-node.rule=Host(`consjejitos-node.docker.localhost`)
+    networks:
+    - network1
+    - crane-net
+    ports:
+    - '3000'
+    restart: always
+    volumes:
+    - C:\Users\t-agu\OneDrive\Escritorio\tuki\crane-rest-api\api\files\temp\consjejitos\scripts\node\package.json:/app/package.json
+    - C:\Users\t-agu\OneDrive\Escritorio\tuki\crane-rest-api\api\files\temp\consjejitos\scripts\node\server.js:/app/server.js
+    working_dir: /app
+  service1:
+    environment:
+      MYSQL_DATABASE: mydb
+      MYSQL_PASSWORD: userpass
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_USER: user
+    image: mysql
+    labels:
+    - a.label.name=consjejitos
+    - traefik.http.routers.consjejitos-service1.rule=Host(`consjejitos-service1.docker.localhost`)
+    networks:
+    - network1
+    - crane-net
+    ports:
+    - '3306'
+    restart: unless-stopped
+    working_dir: /app
+  traefik-proxy:
+    command:
+    - --api.insecure=true
+    - --providers.docker=true
+    - --accesslog=true
+    - --accesslog.format=json
+    - --metrics.prometheus=true
+    - --metrics.prometheus.buckets=0.1,0.3,1.2,5.0
+    - --entrypoints.web.address=:80
+    - --providers.docker.constraints=Label(`a.label.name`, `consjejitos`)
+    - --providers.docker.watch=true
+    image: traefik:latest
+    networks:
+    - crane-net
+    - prometheus-net
+    ports:
+    - 0:80
+    - 0:8080
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock

@@ -9,7 +9,6 @@ from api.db.models import RepositoryItem
 
 def get_by_name(db: Session, name: str, user_id: int = None):
     ''' Get app by name '''
-
     return db.query(models.App).filter(and_(models.App.name == name, models.App.deleted_at == None)).filter(or_(models.App.user_id == user_id, user_id is None)).first()
 
 
@@ -51,9 +50,14 @@ def create(db: Session, user_app: schemas.AppCreate):
     app_dict["services"] = json.dumps(clean_services)
     app_dict["hosts"] = json.dumps(hosts_list)
 
-    # 3. FILTRAR CAMPOS: Extraemos 'environment' (y cualquier otro campo extra del front)
-    # para que NO se envíe al constructor de SQLAlchemy
-    app_dict.pop("environment", None) 
+    # 3. FILTRAR CAMPOS: Extraemos campos que pertenecen al schema de API
+    # pero no a la tabla apps, para que no se envíen al constructor de SQLAlchemy.
+    app_dict.pop("environment", None)
+    app_dict.pop("repository_state", None)
+    app_dict.pop("repository_updated_at", None)
+    # Extraemos 'alerts' enviadas desde el frontend para evitar pasar claves
+    # desconocidas al constructor de SQLAlchemy (models.App no tiene ese campo)
+    app_dict.pop("alerts", None)
     # Si 'startup_scripts' o cualquier otra propiedad estuviera a nivel de App, la sacas acá también:
     # app_dict.pop("startup_scripts", None)
 
@@ -67,8 +71,15 @@ def create(db: Session, user_app: schemas.AppCreate):
 
 def update(db: Session, app: schemas.App):
     ''' Update app '''
-    app.services = json.dumps(app.services)
-    app.hosts = json.dumps(app.hosts)
+    services = app.services or []
+    clean_services = [
+        service.model_dump() if hasattr(service, 'model_dump')
+        else service.dict() if hasattr(service, 'dict')
+        else service
+        for service in services
+    ]
+    app.services = json.dumps(clean_services)
+    app.hosts = json.dumps(app.hosts or [])
 
     db.commit()
     db.refresh(app)

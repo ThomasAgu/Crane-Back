@@ -15,4 +15,7 @@ def map_repository_item_result(row):
         "is_voted_positive": bool(is_voted_positive),
         "is_voted_negative": bool(is_voted_negative),
         "state": item.state,
+        "is_template": item.is_template,
+        "created_at": item.created_at,
+        "updated_at": item.updated_at
     }

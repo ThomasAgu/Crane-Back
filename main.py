@@ -109,7 +109,7 @@ async def startup_event():
     
     create_db_and_tables()
     await start_rules()
-    #await start_monitoring()
+    await start_monitoring()
     #await start_stats_collection()
     update_policies_file(OPA_RBAC_CONFIG_NAME, OPA_RBAC_CONFIG_FILE, True)
     # se va a ir esto me parece porque ya lo tenemos en base de datos
@@ -122,7 +122,7 @@ async def startup_event():
         populate_firing_actions(db)
         populate_scenarios(db)
         # Sync custom alerts from database to Prometheus on startup
-        #sync_alerts_to_prometheus(db)
+        #await sync_alerts_to_prometheus(db)
     finally:
         db.close()
 
