@@ -1,0 +1,111 @@
+[
+  {
+    "name": "Network Latency Spike",
+    "description": "Aumenta artificialmente la latencia de red del servicio seleccionado.",
+    "category": "chaos",
+    "function_name": "induce_latency"
+  },
+  {
+    "name": "Packet Loss Injection",
+    "description": "Introduce pérdida aleatoria de paquetes en el tráfico del servicio.",
+    "category": "chaos",
+    "function_name": "packet_loss"
+  },
+  {
+    "name": "Bandwidth Throttling",
+    "description": "Limita el ancho de banda disponible para el contenedor objetivo.",
+    "category": "chaos",
+    "function_name": "bandwidth_limit"
+  },
+  {
+    "name": "CPU Saturation",
+    "description": "Genera una carga artificial de CPU dentro del contenedor.",
+    "category": "chaos",
+    "function_name": "cpu_stress"
+  },
+  {
+    "name": "Memory Pressure",
+    "description": "Simula un escenario de uso intensivo de memoria en el contenedor.",
+    "category": "chaos",
+    "function_name": "memory_stress"
+  },
+  {
+    "name": "Disk I/O Throttling",
+    "description": "Restringe la velocidad de lectura y escritura del sistema de archivos.",
+    "category": "chaos",
+    "function_name": "disk_io_limit"
+  },
+  {
+    "name": "Kill Container",
+    "description": "Finaliza abruptamente el contenedor afectado.",
+    "category": "chaos",
+    "function_name": "kill_container"
+  },
+  {
+    "name": "Restart Loop",
+    "description": "Reinicia repetidamente el contenedor durante el escenario.",
+    "category": "chaos",
+    "function_name": "restart_loop"
+  },
+  {
+    "name": "Freeze Container",
+    "description": "Pausa completamente la ejecución del contenedor.",
+    "category": "chaos",
+    "function_name": "pause_container"
+  },
+  {
+    "name": "Dependency Degradation",
+    "description": "Simula lentitud extrema en un servicio del cual depende el objetivo.",
+    "category": "chaos",
+    "function_name": "dependency_latency"
+  },
+
+  {
+    "name": "Linear Load Increase",
+    "description": "Incrementa progresivamente el tráfico hacia el servicio.",
+    "category": "stress",
+    "function_name": "linear_load"
+  },
+  {
+    "name": "Traffic Spike",
+    "description": "Genera un pico repentino de alto tráfico durante un corto período.",
+    "category": "stress",
+    "function_name": "spike"
+  },
+  {
+    "name": "Soak Test",
+    "description": "Mantiene una carga sostenida durante un periodo prolongado.",
+    "category": "stress",
+    "function_name": "soak"
+  },
+  {
+    "name": "CPU-bound Traffic",
+    "description": "Envía solicitudes diseñadas para forzar operaciones CPU-intensivas.",
+    "category": "stress",
+    "function_name": "cpu_bound"
+  },
+  {
+    "name": "IO-bound Traffic",
+    "description": "Envía solicitudes que generan operaciones I/O intensivas.",
+    "category": "stress",
+    "function_name": "io_bound"
+  },
+  {
+    "name": "Large Payload Requests",
+    "description": "Envía solicitudes con cargas útiles grandes para estresar la red.",
+    "category": "stress",
+    "function_name": "large_payload"
+  },
+  {
+    "name": "Spike + Plateau",
+    "description": "Inicia con un pico alto de tráfico seguido de una carga estable.",
+    "category": "stress",
+    "function_name": "spike_plateau"
+  },
+  {
+    "name": "Mixed Stress Scenario",
+    "description": "Combina generación de carga con variaciones controladas de intensidad.",
+    "category": "stress",
+    "function_name": "mixed"
+  }
+]

@@ -1,0 +1,50 @@
+networks:
+  crane-net: {}
+  network1:
+    driver: bridge
+  prometheus-net:
+    external: true
+services:
+  service1:
+    image: gkonofaos/tuc
+    labels:
+    - a.label.name=ouihfoqhiuw
+    - traefik.http.routers.ouihfoqhiuw-service1.rule=Host(`ouihfoqhiuw-service1.docker.localhost`)
+    networks:
+    - crane-net
+    restart: unless-stopped
+    working_dir: /app
+  service2:
+    image: node
+    labels:
+    - a.label.name=ouihfoqhiuw
+    - traefik.http.routers.ouihfoqhiuw-service2.rule=Host(`ouihfoqhiuw-service2.docker.localhost`)
+    networks:
+    - network1
+    - crane-net
+    ports:
+    - '3000'
+    restart: unless-stopped
+    volumes:
+    - /:/app
+    working_dir: /app
+  traefik-proxy:
+    command:
+    - --api.insecure=true
+    - --providers.docker=true
+    - --accesslog=true
+    - --accesslog.format=json
+    - --metrics.prometheus=true
+    - --metrics.prometheus.buckets=0.1,0.3,1.2,5.0
+    - --entrypoints.web.address=:80
+    - --providers.docker.constraints=Label(`a.label.name`, `ouihfoqhiuw`)
+    - --providers.docker.watch=true
+    image: traefik:latest
+    networks:
+    - crane-net
+    - prometheus-net
+    ports:
+    - 0:80
+    - 0:8080
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock

@@ -1,0 +1,94 @@
+alerting:
+  alertmanagers:
+  - scheme: http
+  - static_configs:
+    - targets:
+      - alertmanager:9093
+global:
+  evaluation_interval: 5s
+  external_labels:
+    monitor: crane-monitor
+  scrape_interval: 5s
+rule_files:
+- rules.yml
+- /etc/prometheus/rules/*.yml
+scrape_configs:
+- job_name: prometheus
+  static_configs:
+  - targets:
+    - localhost:9090
+- job_name: prueba_demo_crane_2024-1
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.24.0.4:8080
+- job_name: ANACHE-2
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - None:8080
+- job_name: ANACHE2-3
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - None:8080
+- job_name: nombredeappp-4
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.3:8080
+- job_name: nombredeappp-1
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.4:8080
+- job_name: miprimerservidorconcrane-1
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.3:8080
+- job_name: miprimeraappconcrane-1
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.3:8080
+- job_name: aplicacionconsejos-2
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.4:8080
+- job_name: app1-1
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.3:8080
+- job_name: jicv2026-3
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.3:8080
+- job_name: aplicacion-1
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.3:8080
+- job_name: templateone-1
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.3:8080
+- job_name: con_alertascreadas-6
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.3:8080
+- job_name: aaapp2-8
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.3:8080
+- job_name: consejitos2-2
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.4:8080

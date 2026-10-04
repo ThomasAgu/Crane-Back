@@ -1,0 +1,15 @@
+services:
+  opa:
+    image: openpolicyagent/opa:latest
+    restart: always
+    ports:
+      - "8181:8181"
+    volumes:
+      - ./policy:/policy:ro
+    command:
+      - "run"
+      - "--server"
+      - "--log-level=debug"
+      - "--addr"
+      - ":8181"
+      - "/policy"

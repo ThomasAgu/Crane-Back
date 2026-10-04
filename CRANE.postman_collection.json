@@ -1,0 +1,1352 @@
+{
+	"info": {
+		"_postman_id": "65e7b6d1-8131-46fe-b41d-3950c7852420",
+		"name": "CRANE",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "7806780"
+	},
+	"item": [
+		{
+			"name": "AUTH",
+			"item": [
+				{
+					"name": "REGISTRARSE",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"full_name\": \"Franco Bellino\",\r\n    \"email\": \"franco@gmail.com\",\r\n    \"password\": \"123456\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/auth/register",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "LOGIN",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {\r",
+									"    pm.environment.set(\"jwt\", pm.response.json().access_token);\r",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"franco@gmail.com\",\r\n    \"password\": \"123456\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/auth/login",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "APPS",
+			"item": [
+				{
+					"name": "GET USER APPS",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{jwt}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/apps",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"apps"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET APP BY ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{jwt}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/apps/2",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"apps",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CREAR APP",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"prueba_demo_crane\",\r\n    \"services\": [\r\n        {\r\n            \"name\": \"whoami\",\r\n            \"image\": \"traefik/whoami\",\r\n            \"networks\": [\r\n                \"crane-net\"\r\n            ]\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/apps",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"apps"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "STOP APP BY ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/apps/3/stop",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"apps",
+								"3",
+								"stop"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "START APP BY ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"francoappv121\",\r\n    \"services\": [\r\n        {\r\n            \"name\": \"whoami\",\r\n            \"image\": \"traefik/whoami\",\r\n            \"networks\": [\r\n                \"crane-net\"\r\n            ]\r\n        }\r\n    ],\r\n    \"command\": \"say hello\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/apps/1/start",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"apps",
+								"1",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "RESTART APP BY ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"francoappv121\",\r\n    \"services\": [\r\n        {\r\n            \"name\": \"whoami\",\r\n            \"image\": \"traefik/whoami\",\r\n            \"networks\": [\r\n                \"crane-net\"\r\n            ]\r\n        }\r\n    ],\r\n    \"command\": \"say hello\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/apps/5/restart",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"apps",
+								"5",
+								"restart"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ELIMINAR APP",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/apps/1",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"apps",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "EDITAR APP",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"pepe\",\r\n    \"services\": [\r\n        {\r\n            \"name\": \"whoami\",\r\n            \"image\": \"traefik/whoami\",\r\n            \"networks\": [\r\n                \"crane-net\"\r\n            ]\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/apps/1",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"apps",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ESCALAR APP",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"test_crane_4\",\r\n    \"services\": [\r\n        {\r\n            \"name\": \"whoami\",\r\n            \"count\": 5\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/apps/scale",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"apps",
+								"scale"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "REFRESH SCRAPES",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"test_crane_4\",\r\n    \"services\": [\r\n        {\r\n            \"name\": \"whoami\",\r\n            \"count\": 5\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/apps/refresh",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"apps",
+								"refresh"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "APP STATS",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/apps/5/stats",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"apps",
+								"5",
+								"stats"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "OPA",
+			"item": [
+				{
+					"name": "OPA CONFIG",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\":\"resource\",\r\n    \"policy\": \"{ input.role == 'user'  }\",\r\n    \"threshold\": 5,\r\n    \"policy_status\": \"allow\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/opa/configs",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"opa",
+								"configs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET OPA db config",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/opa/configs",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"opa",
+								"configs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET OPA POLICIES",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/opa/policies",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"opa",
+								"policies"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SYNC DB INTO OPA",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"policy_name\":\"test\",\r\n    \"threshold\":4,\r\n    \"policy\":\"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/opa/testDB",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"opa",
+								"testDB"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CREATE POLICY ON OPA CLIENT",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"query\", JSON.stringify(\r",
+									"    `package rbac.authz\r",
+									"\r",
+									"    import rego.v1\r",
+									"    import data.rbac.user_roles\r",
+									"\r",
+									"    role_permissions := {\r",
+									"        \"ADMIN\": [{\"action\": \"GET\",  \"object\": \"APPS\"},{\"action\": \"POST\",  \"object\": \"APPS\"},{\"action\": \"GET\",  \"object\": \"ROLES\"}],\r",
+									"        \"USER\":  [{\"action\": \"GET\",  \"object\": \"APPS\"}],\r",
+									"    }\r",
+									"\r",
+									"    default allow := false\r",
+									"    allow if {\r",
+									"        # lookup the list of roles for the user\r",
+									"        roles := user_roles[input.user]\r",
+									"\r",
+									"        # for each role in that list\r",
+									"        r := roles[_]\r",
+									"\r",
+									"        # lookup the permissions list for role r\r",
+									"        permissions := role_permissions[r]\r",
+									"\r",
+									"        # for each permission\r",
+									"        p := permissions[_]\r",
+									"\r",
+									"        # check if the permission granted to r matches the user's request\r",
+									"        p == {\"action\": input.action, \"object\": input.object}\r",
+									"    }`\r",
+									"   )\r",
+									")"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"policy_name\": \"rbac\",\r\n    \"policy_content\": {{query}}\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/opa/policies",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"opa",
+								"policies"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CREATE POLICY ON OPA CLIENT Copy",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"query\", JSON.stringify(\r",
+									"    `package play\r",
+									" \r",
+									"import data.testapi.testdata\r",
+									"\r",
+									"default helloss = false\r",
+									"\r",
+									"hello {\r",
+									"\tm := input.message\r",
+									"\ttestdata[i] == m\r",
+									"}`)\r",
+									")"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"api/user_roles\",\r\n    \"data\": {\r\n        \"alice\": [\r\n            \"engineering\",\r\n            \"webdev\"\r\n        ],\r\n        \"bob\": [\r\n            \"hr\"\r\n        ]\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/opa/data",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"opa",
+								"data"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CHECK POLICY",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"policy_name\": \"rbac2\",\r\n    \"input_data\": {\r\n        \"input\": {\r\n            \"user\": \"franco@gmail.com\",\r\n            \"action\": \"GET\",\r\n            \"object\": \"ROLES\"\r\n        }\r\n    },\r\n    \"rule_name\": \"allow\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/opa/policies/check",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"opa",
+								"policies",
+								"check"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ELIMINAR",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/opa/policies/rbac2",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"opa",
+								"policies",
+								"rbac2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "MONITORING",
+			"item": [
+				{
+					"name": "INICIAR MONITORING",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{jwt}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/monitoring",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"monitoring"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "RESTART MONITORING",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{jwt}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/monitoring/restart",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"monitoring",
+								"restart"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "STOP MONITORING",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{jwt}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/monitoring/stop",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"monitoring",
+								"stop"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ALERT",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"receiver\": \"post-api\",\r\n    \"status\": \"firing\",\r\n    \"alerts\": [\r\n        {\r\n            \"status\": \"firing\",\r\n            \"labels\": {\r\n                \"alertname\": \"high_request_count\",\r\n                \"code\": \"200\",\r\n                \"entrypoint\": \"web\",\r\n                \"instance\": \"172.30.0.4:8080\",\r\n                \"job\": \"pruebaapi-1\",\r\n                \"method\": \"GET\",\r\n                \"monitor\": \"crane-monitor\",\r\n                \"protocol\": \"http\",\r\n                \"severity\": \"warning\"\r\n            },\r\n            \"annotations\": {\r\n                \"description\": \"The request count for Traefik entrypoint is consistently high.\",\r\n                \"summary\": \"High request count for Traefik\"\r\n            },\r\n            \"startsAt\": \"2024-03-28T21:04:09.764Z\",\r\n            \"endsAt\": \"2024-03-28T21:07:54.764Z\",\r\n            \"generatorURL\": \"http://1decdadef3a5:9090/graph?g0.expr=increase%28traefik_entrypoint_requests_total%5B1m%5D%29+%3E+100&g0.tab=1\",\r\n            \"fingerprint\": \"80f7be4d4f2d19f4\"\r\n        }\r\n    ],\r\n    \"groupLabels\": {\r\n        \"alertname\": \"high_request_count\"\r\n    },\r\n    \"commonLabels\": {\r\n        \"alertname\": \"high_request_count\",\r\n        \"code\": \"200\",\r\n        \"entrypoint\": \"web\",\r\n        \"instance\": \"172.30.0.4:8080\",\r\n        \"job\": \"pruebaapi-1\",\r\n        \"method\": \"GET\",\r\n        \"monitor\": \"crane-monitor\",\r\n        \"protocol\": \"http\",\r\n        \"severity\": \"warning\"\r\n    },\r\n    \"commonAnnotations\": {\r\n        \"description\": \"The request count for Traefik entrypoint is consistently high.\",\r\n        \"summary\": \"High request count for Traefik\"\r\n    },\r\n    \"externalURL\": \"http://729ede61a51c:9093\",\r\n    \"version\": \"4\",\r\n    \"groupKey\": \"{}:{alertname=\\\"high_request_count\\\"}\",\r\n    \"truncatedAlerts\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/monitoring/alert",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"monitoring",
+								"alert"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "RULE",
+			"item": [
+				{
+					"name": "INICIAR RULE",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{jwt}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/rules",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"rules"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "RESTART RULE",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{jwt}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/monitoring/restart",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"monitoring",
+								"restart"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "STOP RULE",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{jwt}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/monitoring/stop",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"monitoring",
+								"stop"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ROLES",
+			"item": [
+				{
+					"name": "OBTENER ROLES",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/roles",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"roles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CREAR ROL",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"USE2R\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/roles",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"roles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CREAR ROL PARA USUARIO",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/roles/{{roleId}}/user/{{userId}}",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"roles",
+								"{{roleId}}",
+								"user",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CREAR ROL PARA USUARIO Copy",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/roles/verify",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"roles",
+								"verify"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ELIMINAR ROLES USUARIO",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/roles/{{roleId}}/user/{{userId}}",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"roles",
+								"{{roleId}}",
+								"user",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "OBTENER ROLES USUARIO",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/roles/user/{{userId}}",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"roles",
+								"user",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "RELOAD ROLES FROM REGO",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{craneUrl}}/api/v1/roles/OPA/reload",
+							"host": [
+								"{{craneUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"roles",
+								"OPA",
+								"reload"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "craneUrl",
+			"value": "http://127.0.0.1:8000"
+		},
+		{
+			"key": "roleId",
+			"value": "1"
+		},
+		{
+			"key": "userId",
+			"value": "1"
+		}
+	]
+}

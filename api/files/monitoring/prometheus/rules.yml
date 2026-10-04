@@ -1,0 +1,74 @@
+groups:
+  - name: Services
+    rules:
+      - alert: service_down
+        expr: up == 0
+        for: 5s
+        labels:
+          severity: page
+        annotations:
+          summary: "Instance {{ $labels.instance }} down"
+          description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 30 seconds."
+
+      - alert: high_load
+        expr: avg_over_time(node_load1[1m]) > 0.8
+        for: 10s
+        labels:
+          severity: page
+        annotations:
+          summary: "Instance {{ $labels.instance }} under high load"
+          description: "{{ $labels.instance }} of job {{ $labels.job }} is under high load."
+
+      - alert: site_down
+        expr: avg_over_time(probe_success[1m]) < 1
+        for: 30s
+        labels:
+          severity: page
+        annotations:
+          summary: "Site Down: {{$labels.instance}}"
+          description: "Site Down: {{$labels.instance}} for more than 30 seconds"
+
+      - alert: site_slow
+        expr: avg_over_time(probe_duration_seconds[1m]) > 1
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Site Slow: {{$labels.instance}}"
+          description: "Site Slow: {{$labels.instance}} for more than 30 seconds"
+
+      - alert: high_request_count
+        expr: increase(traefik_entrypoint_requests_total[10s]) > 100
+        for: 10s
+        labels:
+          severity: warning
+        annotations:
+          summary: "High request count for Traefik"
+          description: "The request count for Traefik entrypoint is consistently high."
+
+      - alert: high_error_rate
+        expr: increase(traefik_entrypoint_requests_total{code=~"5.."}[1m]) / increase(traefik_entrypoint_requests_total[1m]) > 0.01
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate for Traefik"
+          description: "The error rate for Traefik entrypoint is consistently high."
+
+      - alert: high_request_duration
+        expr: increase(traefik_service_request_duration_seconds_sum[1m]) / increase(traefik_service_request_duration_seconds_count[1m]) > 1
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High request duration for Traefik"
+          description: "The request duration for Traefik service is consistently high."
+
+      - alert: high_open_connections
+        expr: traefik_entrypoint_open_connections > 100
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High open connections for Traefik"
+          description: "The open connections for Traefik entrypoint is consistently high."

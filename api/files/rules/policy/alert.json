@@ -1,0 +1,13 @@
+{
+  "service_down": {
+    "firing": "start_app",
+    "resolved": "send_email"
+  },
+  "high_request_count": {
+    "firing": "scale_app",
+    "resolved": "deescalate_app"
+  }
+}
+
+
+

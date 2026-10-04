@@ -1,0 +1,9 @@
+route:
+  group_by: [alertname]
+  receiver: "post-api"
+  repeat_interval: 5s
+
+receivers:
+  - name: "post-api"
+    webhook_configs:
+      - url: "http://host.docker.internal:8000/api/v1/monitoring/alert"

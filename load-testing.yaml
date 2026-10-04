@@ -1,0 +1,11 @@
+config:
+  target: http://prueba_demo_crane_2024-1-whoami.docker.localhost:32841
+  phases:
+    - duration: 200
+      arrivalRate: 100
+      maxVusers: 100
+      name: Startup phase
+scenarios:
+  - flow:
+      - get:
+          url: "/"

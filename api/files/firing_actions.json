@@ -1,0 +1,74 @@
+[
+  {
+    "name": "start_app",
+    "description": "Start app if not force stopped"
+  },
+  {
+    "name": "stop_app",
+    "description": "Stop app"
+  },
+  {
+    "name": "send_email",
+    "description": "Send email to user"
+  },
+  {
+    "name": "do_nothing",
+    "description": "Do nothing - placeholder action"
+  },
+  {
+    "name": "scale_app",
+    "description": "Scale app to current scale + 1 if current scale < max scale"
+  },
+  {
+    "name": "deescalate_app",
+    "description": "Deescalate app to min scale"
+  },
+  {
+    "name": "restart_app",
+    "description": "Restart the application"
+  },
+  {
+    "name": "notify_admin",
+    "description": "Send notification to admin"
+  },
+  {
+    "name": "increase_cpu_limit",
+    "description": "Increase CPU resource limit for the app"
+  },
+  {
+    "name": "increase_memory_limit",
+    "description": "Increase memory resource limit for the app"
+  },
+  {
+    "name": "enable_caching",
+    "description": "Enable caching for the app"
+  },
+  {
+    "name": "disable_caching",
+    "description": "Disable caching for the app"
+  },
+  {
+    "name": "enable_maintenance_mode",
+    "description": "Enable maintenance mode for the app"
+  },
+  {
+    "name": "disable_maintenance_mode",
+    "description": "Disable maintenance mode for the app"
+  },
+  {
+    "name": "log_alert_event",
+    "description": "Log the alert event for auditing purposes"
+  },
+  {
+    "name": "isolate_app",
+    "description": "Isolate the app for troubleshooting"
+  },
+  {
+    "name": "rollback_app",
+    "description": "Rollback app to previous version"
+  },
+  {
+    "name": "trigger_backup",
+    "description": "Trigger a backup of the application data"
+  }
+]
