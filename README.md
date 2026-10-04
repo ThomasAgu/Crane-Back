@@ -27,7 +27,7 @@ desarrolladores que necesiten crear y desplegar servicios en contenedores simula
 ### Requisitos
 ```
 pip install -r requirements.txt
-uvicorn app:app --reload
+uvicorn main:app --reload
 ```
 #### Importante: El docker daemon debe estar iniciado, de lo contrario recibiremos una advertencia y el servidor no se iniciará.
 

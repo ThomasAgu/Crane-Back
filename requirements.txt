@@ -21,3 +21,4 @@ typing_extensions==4.7.1
 urllib3==1.26.9
 uvicorn==0.23.2
 locust>=2.24.0
+httpx>=0.24.0
