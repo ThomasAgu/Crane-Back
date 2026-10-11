@@ -49,10 +49,10 @@ def create(db: Session, user_app: schemas.AppCreate):
     
     app_dict["services"] = json.dumps(clean_services)
     app_dict["hosts"] = json.dumps(hosts_list)
+    app_dict["environment"] = json.dumps(app_dict.get("environment") or {})
 
     # 3. FILTRAR CAMPOS: Extraemos campos que pertenecen al schema de API
     # pero no a la tabla apps, para que no se envíen al constructor de SQLAlchemy.
-    app_dict.pop("environment", None)
     app_dict.pop("repository_state", None)
     app_dict.pop("repository_updated_at", None)
     # Extraemos 'alerts' enviadas desde el frontend para evitar pasar claves
@@ -80,6 +80,8 @@ def update(db: Session, app: schemas.App):
     ]
     app.services = json.dumps(clean_services)
     app.hosts = json.dumps(app.hosts or [])
+    if not isinstance(app.environment, str):
+        app.environment = json.dumps(app.environment or {})
 
     db.commit()
     db.refresh(app)

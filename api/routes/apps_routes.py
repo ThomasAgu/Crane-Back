@@ -40,23 +40,23 @@ async def get_app(app_id: str, db_user=Depends(verify_jwt), db: Session = Depend
 
 @appRouter.delete("/{app_id}", tags=["Apps"], description="Delete an app")
 async def delete(app_id: str, db_user=Depends(verify_jwt), db: Session = Depends(get_db)):
-    # Check that the app is not in a repository item before deleting
-    appInRepo = await RepositoryItemService.get_repository_item_by_id(db, app_id, db_user.id)
-    if (appInRepo):
+    appInRepo = await RepositoryItemService.get_repository_item_by_app_approved(db, app_id, db_user.id)
+    print(appInRepo)
+    if appInRepo:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="App is in a repository item, cannot be deleted")
 
     app = await CraneService.delete(db, app_id, db_user.id)
     return app
 
 
-@appRouter.post("/{app_id}/start", tags=["Apps"], description="Start services of the app ")
+@appRouter.post("/{app_id}/start", tags=["Apps"], description="Start services of the app")
 async def start(app_id: str, db_user=Depends(verify_jwt), db: Session = Depends(get_db)):
     app = await CraneService.start(db, app_id, db_user.id)
     return app
 
 
 @appRouter.post("/{app_id}/stop", tags=["Apps"], description="Stop services of the app")
-async def stop(app_id: int, db_user=Depends(verify_jwt), db: Session = Depends(get_db)):
+async def stop(app_id: str, db_user=Depends(verify_jwt), db: Session = Depends(get_db)):
     app = await CraneService.stop(db, app_id, db_user.id)
     return app
 

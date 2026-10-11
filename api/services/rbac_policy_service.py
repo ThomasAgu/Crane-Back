@@ -57,28 +57,19 @@ allow if {
 
     return rego
 
-import os
 import logging
-from datetime import datetime
+import tempfile
 
 def write_rego_file(rego_content: str):
     """
-    Writes rego content to a fixed path instead of a temporary file.
+    Writes generated Rego to a temporary file outside OPA's policy directory.
     Returns the full path to the created file.
     """
-    # Ruta destino fija
-    base_dir = r"C:\Users\t-agu\OneDrive\Escritorio\tuki\crane-rest-api\api\files\rules\policy"
-    
-    # Crear directorio si no existe
-    os.makedirs(base_dir, exist_ok=True)
-    
-    # Nombre de archivo único
-    filename = f"policy_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}.rego"
-    file_path = os.path.join(base_dir, filename)
-
-    # Escribir archivo
-    with open(file_path, "w", encoding="utf-8") as f:
-        f.write(rego_content)
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".rego", encoding="utf-8", delete=False
+    ) as rego_file:
+        rego_file.write(rego_content)
+        file_path = rego_file.name
 
     logging.warning(f"[RBAC] Nuevo archivo .rego generado en: {file_path}")
     return file_path

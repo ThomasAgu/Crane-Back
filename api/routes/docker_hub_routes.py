@@ -20,7 +20,7 @@ async def search_images(
     return await search_docker_images(query)
 
 
-@dockerHubRouter.get("/{image_name}/details", response_model=Dict[str, Any])
+@dockerHubRouter.get("/{image_name:path}/details", response_model=Dict[str, Any])
 async def get_image_info(
     image_name: str
 ):

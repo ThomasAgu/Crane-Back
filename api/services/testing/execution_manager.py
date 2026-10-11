@@ -25,7 +25,6 @@ from .alert_collector import AlertCollector
 from .chaos_engine import ChaosEngine
 from .docker_resolver import DockerResolver, ResolvedContainer
 from .report_generator import ReportGenerator, ScenarioReport
-from .stress_engine import StressEngine
 
 logger = logging.getLogger(__name__)
 
@@ -228,6 +227,8 @@ class ExecutionManager:
 
     async def _run_stress(self, params: ScenarioParams, ctx: AppContext):
         """Instancia el StressEngine y ejecuta el escenario."""
+        from .stress_engine import StressEngine
+
         engine = StressEngine(host=ctx.service_url)
         return await engine.run(
             function_name=params.function_name,

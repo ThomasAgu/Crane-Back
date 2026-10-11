@@ -1,0 +1,36 @@
+networks:
+  crane-net: {}
+  prometheus-net:
+    external: true
+services:
+  eeq:
+    image: node
+    labels:
+    - a.label.name=asd
+    - traefik.http.routers.asd-eeq.rule=Host(`asd-eeq.docker.localhost`)
+    networks:
+    - crane-net
+    ports:
+    - '12:20'
+    restart: unless-stopped
+    working_dir: /app
+  traefik-proxy:
+    command:
+    - --api.insecure=true
+    - --providers.docker=true
+    - --accesslog=true
+    - --accesslog.format=json
+    - --metrics.prometheus=true
+    - --metrics.prometheus.buckets=0.1,0.3,1.2,5.0
+    - --entrypoints.web.address=:80
+    - --providers.docker.constraints=Label(`a.label.name`, `asd`)
+    - --providers.docker.watch=true
+    image: traefik:latest
+    networks:
+    - crane-net
+    - prometheus-net
+    ports:
+    - 0:80
+    - 0:8080
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock

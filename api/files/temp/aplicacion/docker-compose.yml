@@ -6,20 +6,6 @@ networks:
     external: true
 services:
   service1:
-    image: node
-    labels:
-    - a.label.name=aplicacion
-    - traefik.http.routers.aplicacion-service1.rule=Host(`aplicacion-service1.docker.localhost`)
-    networks:
-    - network1
-    - crane-net
-    ports:
-    - '3000'
-    restart: unless-stopped
-    volumes:
-    - /:/app
-    working_dir: /app
-  service2:
     environment:
       MYSQL_DATABASE: mydb
       MYSQL_PASSWORD: userpass
@@ -28,15 +14,25 @@ services:
     image: mysql
     labels:
     - a.label.name=aplicacion
-    - traefik.http.routers.aplicacion-service2.rule=Host(`aplicacion-service2.docker.localhost`)
+    - traefik.http.routers.aplicacion-service1.rule=Host(`aplicacion-service1.docker.localhost`)
     networks:
     - network1
     - crane-net
     ports:
     - '3306'
     restart: unless-stopped
-    volumes:
-    - /:/var/lib/mysql
+    working_dir: /app
+  servucio:
+    image: node
+    labels:
+    - a.label.name=aplicacion
+    - traefik.http.routers.aplicacion-servucio.rule=Host(`aplicacion-servucio.docker.localhost`)
+    networks:
+    - network1
+    - crane-net
+    ports:
+    - '3000'
+    restart: unless-stopped
     working_dir: /app
   traefik-proxy:
     command:

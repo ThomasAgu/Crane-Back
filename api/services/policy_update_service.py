@@ -1,5 +1,6 @@
 # policy_update_service.py
 
+from pathlib import Path
 from fastapi import Depends
 from api.clients.opa_client import update_policies_file
 from api.config.constants import OPA_RBAC_CONFIG_FILE, OPA_RBAC_CONFIG_NAME
@@ -24,9 +25,10 @@ def update_opa_policies_from_db(db):
     path = write_rego_file(rego)
     print("Archivo generado:", path)
 
-        
-    # Usa tu método actual
-    return update_policies_file(OPA_RBAC_CONFIG_NAME, path, force=True)
+    try:
+        return update_policies_file(OPA_RBAC_CONFIG_NAME, path, force=True)
+    finally:
+        Path(path).unlink(missing_ok=True)
 
 def update_or_create_roles_and_permissions_in_db():
     """

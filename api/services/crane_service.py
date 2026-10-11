@@ -4,6 +4,7 @@ import json
 from fastapi import HTTPException
 from python_on_whales import docker
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.attributes import set_committed_value
 from starlette import status
 import api.db.crud.app_crud as AppCrud
 import api.db.crud.alert_crud as AlertCrud
@@ -19,6 +20,14 @@ import re
 SERVICE_NAME_PATTERN = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9_.-]*$")
 CONTAINER_PATH_PATTERN = re.compile(r"^/(?:[a-zA-Z0-9._-]+/)*[a-zA-Z0-9._-]+$")
 ALLOWED_RESTART_POLICIES = {"unless-stopped", "always", "on-failure", "no"}
+
+
+def _decode_app_environment(app):
+    environment = app.environment
+    if isinstance(environment, str):
+        environment = json.loads(environment)
+    set_committed_value(app, "environment", environment or {})
+    return app
 
 
 def _read_app_container_logs(project_name):
@@ -141,10 +150,19 @@ async def create(db: Session, app: App, user_id: int):
     
     # Reasignamos el nombre con el ID autoincremental de la DB
     app.name = f"{db_app.name}-{db_app.id}"
+    alerts = getattr(app, 'alerts', []) or []
 
     # If is template then is not necessary to generate docker-compose or start containers, just return the db_app
     if (db_app.is_template): 
-        return db_app
+        if alerts:
+            from api.services import alert_service as AlertService
+            try:
+                for alert in alerts:
+                    await AlertService.create(db, db_app.id, alert, sync_prometheus=False)
+            except Exception:
+                AppCrud.delete_physical(db, db_app.id)
+                raise
+        return _decode_app_environment(db_app)
 
     docker_started = False
     temp_files_generated = False    
@@ -170,17 +188,23 @@ async def create(db: Session, app: App, user_id: int):
         # 5. Métricas (Prometheus)
         prometheus_scrape_generator(app.name, proxy_route.ip)
 
-        # 6. Crear las alertas customisables de app.alerts (si vienen desde el frontend)
-        alerts = getattr(app, 'alerts', []) or []
+        # Persist custom alerts and their policies after the app is deployed.
         if alerts:
             from api.services import alert_service as AlertService
             for alert in alerts:
-                try:
-                    await AlertService.create(db, db_app.id, alert)
-                except Exception as e:
-                    print(f"Failed to create alert for app {db_app.id}: {e}")
+                await AlertService.create(db, db_app.id, alert, sync_prometheus=False)
+
+            from api.services.prometheus_sync_service import (
+                sync_alerts_to_prometheus,
+                trigger_prometheus_reload,
+            )
+            await sync_alerts_to_prometheus(db)
+            trigger_prometheus_reload()
 
         await restart_monitoring()
+
+        if app.current_scale > 1:
+            await scale(db, db_app.id, app.current_scale, user_id)
 
     except Exception as e:
         # --- CONTROL DE ERRORES Y ROLLBACK ---
@@ -195,7 +219,7 @@ async def create(db: Session, app: App, user_id: int):
         
         # Eliminar registro fallido de la DB para no ensuciar el dashboard del usuario
         try:
-            AppCrud.delete(db, db_app.id)
+            AppCrud.delete_physical(db, db_app.id)
         except Exception:
             pass
 
@@ -210,7 +234,7 @@ async def create(db: Session, app: App, user_id: int):
         if temp_files_generated:
             docker_compose_remove(app.name)
 
-    return db_app
+    return _decode_app_environment(db_app)
 
 async def copy(db: Session, app_id: int, user_id: int):
     ''' Duplicate the app row and update the user_id '''
@@ -221,10 +245,10 @@ async def copy(db: Session, app_id: int, user_id: int):
 
     # Create a copy of the app
     app_copy = models.App(
-        #Este nombre se repite con cada copia que hacemos jejox
         name=f"{app.name}-copia",
         services=app.services,
         hosts=app.hosts,
+        environment=app.environment,
         current_scale=app.current_scale,
         min_scale=app.min_scale,
         max_scale=app.max_scale,
@@ -269,7 +293,7 @@ async def start(db: Session, app_id: str, user_id: int = None):
 async def scale(db: Session, app_id: str, count: int, user_id: int = None):
     ''' Scale app services '''
     app = await get_app_with_docker(db, app_id, user_id)
-    scales = {service['name']: count for service in app.services}
+    scales = {service.name: count for service in app.services}
     app.docker.compose.up(detach=True, scales=scales)
     return {"message": f"App {app.name} scaled"}
 
@@ -277,14 +301,131 @@ async def scale(db: Session, app_id: str, count: int, user_id: int = None):
 async def update(db: Session, app_id: str, app: App, user_id: int):
     ''' Update app on db and docker compose '''
     validate_app_configuration(app)
-    db_app = await get_app_by_id(db, app_id, user_id)
+    if app.alerts:
+        alert_names = [alert.alert for alert in app.alerts]
+        if len(alert_names) != len(set(alert_names)):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Los nombres de alertas de la aplicación no pueden repetirse.",
+            )
+
+    db_app = AppCrud.get_by_id(db, app_id, user_id)
+    if not db_app:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="App not found")
+    if app.name != db_app.name:
+        existing_app = AppCrud.get_by_name_and_user_id(db, app.name, user_id)
+        if existing_app and existing_app.id != db_app.id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="App with this name already exists",
+            )
+
+    old_runtime_name = f"{db_app.name}-{db_app.id}"
+    new_runtime_name = f"{app.name}-{db_app.id}"
+    was_deployed = not db_app.is_template
+    will_be_deployed = not app.is_template
+    generated_hosts = app.hosts or []
+
+    if will_be_deployed:
+        deployment = app.model_copy(deep=True)
+        deployment.id = db_app.id
+        deployment.name = new_runtime_name
+        compose = docker_compose_generator(deployment)
+        docker = await get_docker_client(new_runtime_name)
+        docker.compose.build()
+        docker.compose.up(detach=True, remove_orphans=True)
+        if app.current_scale and app.current_scale > 1:
+            docker.compose.up(
+                detach=True,
+                remove_orphans=True,
+                scales={
+                    service.name: app.current_scale
+                    for service in app.services
+                },
+            )
+
+        proxy_route = await get_router_dir(new_runtime_name, docker)
+        generated_hosts = compose["hosts"]
+        prometheus_scrape_generator(new_runtime_name, proxy_route.ip)
+        if was_deployed and old_runtime_name != new_runtime_name:
+            old_docker = await get_docker_client(old_runtime_name)
+            old_docker.compose.down()
+            prometheus_scrape_remove(old_runtime_name)
+        await restart_monitoring()
+    elif was_deployed:
+        old_docker = await get_docker_client(old_runtime_name)
+        old_docker.compose.down()
+        prometheus_scrape_remove(old_runtime_name)
+        await restart_monitoring()
+
+    if "alerts" in app.model_fields_set:
+        existing_alerts = AlertCrud.get_by_app_id(db, db_app.id)
+        existing_by_name = {alert.alert: alert for alert in existing_alerts}
+        incoming_by_name = {alert.alert: alert for alert in (app.alerts or [])}
+
+        for alert_name, alert in incoming_by_name.items():
+            existing_alert = existing_by_name.pop(alert_name, None)
+            if existing_alert:
+                existing_alert.expr = alert.expr
+                existing_alert.for_time = alert.for_time
+                existing_alert.severity = alert.severity
+                existing_alert.summary = alert.summary
+                existing_alert.description = alert.description
+            else:
+                existing_alert = models.CustomAlert(
+                    app_id=db_app.id,
+                    alert=alert.alert,
+                    expr=alert.expr,
+                    for_time=alert.for_time,
+                    severity=alert.severity,
+                    summary=alert.summary,
+                    description=alert.description,
+                )
+                db.add(existing_alert)
+                db.flush()
+
+            policy = db.query(models.AppPolicy).filter(
+                models.AppPolicy.app_id == db_app.id,
+                models.AppPolicy.alert_id == existing_alert.id,
+            ).first()
+            if policy:
+                policy.firing_action = alert.firing_action
+                policy.resolved_action = alert.resolved_action
+            else:
+                db.add(models.AppPolicy(
+                    app_id=db_app.id,
+                    alert_id=existing_alert.id,
+                    firing_action=alert.firing_action,
+                    resolved_action=alert.resolved_action,
+                ))
+
+        for removed_alert in existing_by_name.values():
+            db.query(models.AppPolicy).filter(
+                models.AppPolicy.app_id == db_app.id,
+                models.AppPolicy.alert_id == removed_alert.id,
+            ).delete(synchronize_session=False)
+            db.delete(removed_alert)
+
     db_app.services = app.services
+    db_app.name = app.name
     db_app.min_scale = app.min_scale
     db_app.current_scale = app.current_scale
     db_app.max_scale = app.max_scale
     db_app.force_stop = app.force_stop
-    db_app.hosts = app.hosts
+    db_app.hosts = generated_hosts
+    db_app.environment = app.environment
+    db_app.is_template = app.is_template
+    db_app.is_uploaded = app.is_uploaded
     AppCrud.update(db, db_app)
+
+    if will_be_deployed and "alerts" in app.model_fields_set:
+        from api.services.prometheus_sync_service import (
+            sync_alerts_to_prometheus,
+            trigger_prometheus_reload,
+        )
+        await sync_alerts_to_prometheus(db)
+        trigger_prometheus_reload()
+
     return {"message": f"App {app.name} updated"}
 
 
@@ -349,17 +490,22 @@ async def stats(db: Session, app_id: str, user_id: int):
     return app_stats
 
 
-async def get_app_by_id(db, app_id: int, user_id: int = None, include_runtime: bool = True):
+async def get_app_by_id(
+    db, app_id: int, user_id: int = None,
+    include_runtime: bool = True, include_alerts: bool = True
+):
     ''' Get app by id '''
     app = AppCrud.get_by_id(db, app_id, user_id)
     if not app:
         raise HTTPException(status_code=404, detail="App not found")
 
-    app.alerts = AlertCrud.get_by_app_id(db, app.id)
+    if include_alerts:
+        app.alerts = AlertCrud.get_by_app_id(db, app.id)
     if isinstance(app.services, str):
         app.services = json.loads(app.services)
     if isinstance(app.hosts, str):
         app.hosts = json.loads(app.hosts)
+    _decode_app_environment(app)
     if include_runtime:
         host_links, traefik = await asyncio.to_thread(
             _get_app_runtime_access, f"{app.name}-{app.id}"
@@ -380,11 +526,14 @@ async def get_app_by_name_and_user_id(db, app_name: str, user_id: int):
         app.services = json.loads(app.services)
     if isinstance(app.hosts, str):
         app.hosts = json.loads(app.hosts)
+    _decode_app_environment(app)
     return app
 
 async def get_app_with_docker(db, app_id: int, user_id: int = None):
     ''' Get app by id with docker client '''
-    app = await get_app_by_id(db, app_id, user_id, include_runtime=False)
+    app = await get_app_by_id(
+        db, app_id, user_id, include_runtime=False, include_alerts=False
+    )
     app = AppDocker(**app.__dict__)
     app.name = app.name + "-" + str(app.id)
     docker_compose_generator(app)
@@ -426,6 +575,7 @@ async def get_app_by_name(db, app_name: str, user_id: int):
     if not app:
         raise HTTPException(status_code=404, detail="App not found")
     app.services = json.loads(app.services)
+    _decode_app_environment(app)
     app = {k: v for k, v in app.__dict__.items() if v is not None}
     return app
 
@@ -438,6 +588,7 @@ async def get_all(db, user_id: int, skip: int = 0, limit: int = 100):
             app.services = json.loads(app.services)
         if isinstance(app.hosts, str):
             app.hosts = json.loads(app.hosts)
+        _decode_app_environment(app)
 
     return apps
 

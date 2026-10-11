@@ -55,6 +55,7 @@ role_permissions := {
         {"action": "POST", "object": "ALERT", "description": "Generar avisos o alertas dirigidas a profesores/tutores"},
         {"action": "PATCH", "object": "ALERT", "description": "Actualizar o dar por atendida una alerta personal"},
         {"action": "DELETE", "object": "ALERT", "description": "Eliminar alertas personales resueltas"},
+        {"action": "GET", "object": "REPORTS", "description": "Acceder a las estadicsticas de un contenedor"},
         {"action": "GET", "object": "NOTIFICATIONS", "description": "Ver notificaciones enviadas por la plataforma o profesores"},
         {"action": "DELETE", "object": "NOTIFICATIONS", "description": "Eliminar notificaciones recibidas"},
         {"action": "POST", "object": "NOTIFICATIONS", "description": "Responder o enviar notificaciones a compañeros o profesores"},

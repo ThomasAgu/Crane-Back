@@ -21,6 +21,10 @@ async def get_repository_item_by_id(db, repository_item_id: int, user_id: int):
     repository_item = repositoryItemCrud.get_by_id_with_stats(db, repository_item_id, user_id)
     return repository_item
 
+async def get_repository_item_by_app_approved(db, app_id: int, user_id: int):
+    ''' Get repository item by app ID and approved state '''
+    return repositoryItemCrud.get_by_app_id_and_approved_or_pending(db, app_id, user_id)
+
 async def vote_up_repository_item(db, user_id: int, repository_item_id: int):
     ''' Vote up a repository item '''
     voteCrud.add_vote(db, user_id=user_id, repository_item_id=repository_item_id, vote_type='up')

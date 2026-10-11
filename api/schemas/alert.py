@@ -1,6 +1,6 @@
 ''' This file contains the schema for the alert notification. '''
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class GroupLabels(BaseModel):
@@ -47,6 +47,8 @@ class AlertNotification(BaseModel):
     truncatedAlerts: Optional[int] = 0
 
 class CustomAlert(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     alert: str
     expr: str
     for_time: str

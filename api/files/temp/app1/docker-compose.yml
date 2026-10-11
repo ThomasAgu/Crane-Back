@@ -1,25 +1,28 @@
 networks:
+  aaw3:
+    driver: bridge
   crane-net: {}
   prometheus-net:
     external: true
 services:
-  service1:
+  aaaaa:
     environment:
+      AAA: AAA
       MYSQL_DATABASE: mydb
       MYSQL_PASSWORD: userpass
-      MYSQL_ROOT_PASSWORD: rootpass
-      MYSQL_USER: user
     image: mysql
     labels:
+    - Una label
+    - dos label
+    - trese label
     - a.label.name=app1
-    - traefik.http.routers.app1-service1.rule=Host(`app1-service1.docker.localhost`)
+    - traefik.http.routers.app1-aaaaa.rule=Host(`app1-aaaaa.docker.localhost`)
     networks:
+    - aaw3
     - crane-net
     ports:
     - '3306'
     restart: unless-stopped
-    volumes:
-    - /:/var/lib/mysql
     working_dir: /app
   traefik-proxy:
     command:

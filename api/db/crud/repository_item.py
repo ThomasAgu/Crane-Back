@@ -36,6 +36,10 @@ def get_by_app_id(db, app_id: int):
     ''' Get repository item by app ID '''
     return db.query(models.RepositoryItem).filter(models.RepositoryItem.app_id == app_id).first()
 
+def get_by_app_id_and_approved_or_pending(db, app_id: int, user_id: int):
+    ''' Get repository item by app ID and approved or pending state '''
+    return db.query(models.RepositoryItem).filter(models.RepositoryItem.app_id == app_id, models.RepositoryItem.state.in_(["approved", "pending"])).first()
+
 def build_repository_items_with_stats_query(db, user_id: int):
     votes = func.sum(
         case(

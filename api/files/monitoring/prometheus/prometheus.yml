@@ -87,8 +87,28 @@ scrape_configs:
   static_configs:
   - targets:
     - 172.20.0.3:8080
-- job_name: consejitos2-2
+- job_name: app1-2
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.3:8080
+- job_name: appaaw-4
   scrape_interval: 5s
   static_configs:
   - targets:
     - 172.20.0.4:8080
+- job_name: pruebaimagen-6
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.3:8080
+- job_name: anache-7
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.3:8080
+- job_name: primerapp-1
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - 172.20.0.3:8080

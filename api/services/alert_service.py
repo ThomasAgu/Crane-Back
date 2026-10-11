@@ -74,12 +74,12 @@ async def get_alerts(db, app_id):
     custom_alerts = AlertCrud.get_by_app_id(db, app_id)
     return custom_alerts
 
-async def create(db, app_id, alert):
+async def create(db, app_id, alert, sync_prometheus=True):
     new_alert = AlertCrud.create(db, app_id, alert)
     AppPolicyCrud.create(db, app_id, new_alert, alert)
-    # Sync all custom alerts to Prometheus rules file
-    sync_alerts_to_prometheus(db)
-    trigger_prometheus_reload()
+    if sync_prometheus:
+        await sync_alerts_to_prometheus(db)
+        trigger_prometheus_reload()
     return new_alert
 
 async def update(db, app_id, alert, alert_id):
@@ -98,7 +98,7 @@ async def update(db, app_id, alert, alert_id):
     db.commit()
 
     # Sync all custom alerts to Prometheus rules file
-    sync_alerts_to_prometheus(db)
+    await sync_alerts_to_prometheus(db)
     trigger_prometheus_reload()
 
     return {"message": "Custom alert and policy updated successfully"}
@@ -108,7 +108,7 @@ async def delete(db, app_id, alert_id):
     AppPolicyCrud.delete(db, app_id, alert_id)
     result = AlertCrud.delete(db, alert_id)
     # Sync all custom alerts to Prometheus rules file
-    sync_alerts_to_prometheus(db)
+    await sync_alerts_to_prometheus(db)
     trigger_prometheus_reload()
     return result
         

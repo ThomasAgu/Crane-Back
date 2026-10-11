@@ -62,6 +62,7 @@ class App(Base):
     current_scale = Column(Integer, index=True, default=1)
     max_scale = Column(Integer, index=True, default=2)
     hosts = Column(String, index=True)
+    environment = Column(Text, nullable=True)
     force_stop = Column(Boolean, index=True, default=False)
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, onupdate=datetime.now)
@@ -183,7 +184,9 @@ class CustomAlert(Base):
     deleted_at = Column(String, index=True)
 
     app = relationship("App", back_populates="custom_alerts")
-    app_policies = relationship("AppPolicy", back_populates="alert")
+    app_policies = relationship(
+        "AppPolicy", back_populates="alert", cascade="all, delete-orphan"
+    )
 
 class AppPolicy(Base):
     __tablename__ = 'app_policies'

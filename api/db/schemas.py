@@ -18,7 +18,7 @@ class App(BaseModel):
     image: str
     network: str
     hosts: dict
-    environment: str
+    environment: Optional[str] = None
     created_at: str
     updated_at: str
     deleted_at: str

@@ -49,7 +49,7 @@ def generate_prometheus_rules(alerts: List[CustomAlert]) -> Dict[str, Any]:
     }
 
 
-def sync_alerts_to_prometheus(db: Session) -> bool:
+async def sync_alerts_to_prometheus(db: Session) -> bool:
     """
     Fetch all custom alerts from database and write to Prometheus rules file
     """
